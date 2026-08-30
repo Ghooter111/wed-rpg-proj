@@ -585,19 +585,7 @@ function render() {
             ctx.fill();
         }
         
-        // --- DEBUG: DRAW INTERACTION ZONES ---
-        ctx.fillStyle = 'rgba(255, 255, 0, 0.3)'; // Yellow transparent
-        ctx.strokeStyle = 'yellow';
-        ctx.lineWidth = 2;
-        for (let zone of interactionZones) {
-            ctx.fillRect(zone.x - camera.x, zone.y - camera.y, zone.w, zone.h);
-            ctx.strokeRect(zone.x - camera.x, zone.y - camera.y, zone.w, zone.h);
-            
-            ctx.fillStyle = 'white';
-            ctx.font = '16px monospace';
-            ctx.fillText(zone.id, zone.x - camera.x + 10, zone.y - camera.y + 20);
-            ctx.fillStyle = 'rgba(255, 255, 0, 0.3)';
-        }
+
         
     } else {
         ctx.fillStyle = 'white';
