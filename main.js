@@ -52,10 +52,10 @@ const player = {
 
 const interactionZones = [
     { id: 'invitation', x: 160, y: 40, w: 250, h: 120, label: 'Undangan' }, // Altar Top
-    { id: 'galeri', x: 140, y: 510, w: 90, h: 90, label: 'Galeri Pre-Wed' }, // Orange stall
-    { id: 'kisah', x: 340, y: 510, w: 90, h: 90, label: 'Kisah Pertemuan' }, // Purple stall
-    { id: 'alamat', x: 60, y: 600, w: 90, h: 90, label: 'Alamat Acara' }, // Green stall
-    { id: 'donasi', x: 420, y: 600, w: 90, h: 90, label: 'Tanda Kasih / Donasi' } // Blue stall
+    { id: 'galeri', x: 140, y: 620, w: 90, h: 100, label: 'Galeri Pre-Wed' }, // Orange stall
+    { id: 'kisah', x: 340, y: 620, w: 90, h: 100, label: 'Kisah Pertemuan' }, // Purple stall
+    { id: 'alamat', x: 40, y: 700, w: 90, h: 100, label: 'Alamat Acara' }, // Green stall
+    { id: 'donasi', x: 440, y: 700, w: 90, h: 100, label: 'Tanda Kasih / Donasi' } // Blue stall
 ];
 let activeZone = null;
 
@@ -394,15 +394,15 @@ const collisions = [
     { x: 267, y: 131, w: 38, h: 44 },
     
     // Fix for floating on trees and stalls (making the leafy/top parts solid)
-    { x: 190, y: 550, w: 180, h: 140 }, // Center Big Tree
-    { x: 0, y: 650, w: 130, h: 160 },   // Left Tree Group (Lower)
-    { x: 440, y: 650, w: 130, h: 160 }, // Right Tree Group (Lower)
+    { x: 190, y: 640, w: 180, h: 140 }, // Center Big Tree
+    { x: 0, y: 740, w: 130, h: 160 },   // Left Tree Group (Lower)
+    { x: 440, y: 740, w: 130, h: 160 }, // Right Tree Group (Lower)
     
     // The 4 interactive stalls
-    { x: 140, y: 510, w: 90, h: 90 }, // Orange stall
-    { x: 340, y: 510, w: 90, h: 90 }, // Purple stall
-    { x: 60, y: 600, w: 90, h: 90 }, // Green stall
-    { x: 420, y: 600, w: 90, h: 90 }, // Blue stall
+    { x: 140, y: 620, w: 90, h: 100 }, // Orange stall
+    { x: 340, y: 620, w: 90, h: 100 }, // Purple stall
+    { x: 40, y: 700, w: 90, h: 100 }, // Green stall
+    { x: 440, y: 700, w: 90, h: 100 }, // Blue stall
     
     { x: 160, y: 40, w: 250, h: 110 }   // Altar Top
 ];
