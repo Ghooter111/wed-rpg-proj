@@ -18,7 +18,7 @@ resizeCanvas();
 const gameState = {
     isModalOpen: false,
     assetsLoaded: false,
-    assetsToLoad: 9,
+    assetsToLoad: 11, // Increased for new assets
     assetsLoadedCount: 0
 };
 
@@ -139,6 +139,8 @@ function assetLoaded() {
         interactionZone.y = 50; 
         interactionZone.width = 200;
         interactionZone.height = 150;
+        
+        initNPCs();
     }
 }
 
@@ -149,6 +151,7 @@ let worldHeight = window.innerHeight;
 // --- PARTICLES ---
 const leaves = [];
 const splashes = [];
+const butterflies = [];
 
 function spawnLeaf() {
     leaves.push({
@@ -165,15 +168,32 @@ function spawnLeaf() {
 
 function spawnSplash() {
     splashes.push({
-        x: worldWidth * 0.75 + Math.random() * (worldWidth * 0.2),
-        y: worldHeight * 0.4 + Math.random() * (worldHeight * 0.2),
+        x: 285 + Math.random() * 10, // approximate fountain coordinates
+        y: 810 + Math.random() * 10,
         radius: 0,
         maxRadius: Math.random() * 10 + 5,
         opacity: 0.8
     });
 }
 
-const bgImage = new Image(); bgImage.onload = assetLoaded; bgImage.src = './assets/background.jpg';
+function spawnButterfly() {
+    butterflies.push({
+        x: Math.random() * worldWidth,
+        y: Math.random() * worldHeight,
+        vx: (Math.random() - 0.5) * 2,
+        vy: (Math.random() - 0.5) * 2,
+        size: 3,
+        flapTimer: 0,
+        color: Math.random() > 0.5 ? '#3498db' : '#e74c3c'
+    });
+}
+
+// Initial butterflies
+for(let i=0; i<15; i++) spawnButterfly();
+
+const bgImage = new Image(); bgImage.onload = assetLoaded; bgImage.src = './assets/bg_empty.jpg';
+const npcsImg = new Image(); npcsImg.onload = assetLoaded; npcsImg.src = './assets/npcs.png';
+const objectsImg = new Image(); objectsImg.onload = assetLoaded; objectsImg.src = './assets/objects.png';
 
 const charUp = new Image(); charUp.onload = assetLoaded; charUp.src = './assets/char_left.png'; // ATAS (Gambar 3)
 const charDown = new Image(); charDown.onload = assetLoaded; charDown.src = './assets/char_down.png'; // BAWAH (Gambar 2)
@@ -184,6 +204,28 @@ const walkUp = new Image(); walkUp.onload = assetLoaded; walkUp.src = './assets/
 const walkDown = new Image(); walkDown.onload = assetLoaded; walkDown.src = './assets/walk_down.png'; // JALAN BAWAH (Gambar 6)
 const walkLeft = new Image(); walkLeft.onload = assetLoaded; walkLeft.src = './assets/walk_right.png'; // JALAN KIRI (Gambar 8)
 const walkRight = new Image(); walkRight.onload = assetLoaded; walkRight.src = './assets/walk_left.png'; // JALAN KANAN (Gambar 7)
+
+// --- NPCS ---
+const npcs = [];
+function initNPCs() {
+    // Row 1: Priest
+    npcs.push({ x: 260, y: 150, width: 30, height: 10, drawWidth: 40, drawHeight: 60, sx: 974, sy: 0, sw: 487, sh: 313, yOffset: 50 });
+    // Row 1: Couple
+    npcs.push({ x: 200, y: 160, width: 40, height: 10, drawWidth: 80, drawHeight: 60, sx: 0, sy: 0, sw: 974, sh: 313, yOffset: 50 });
+    
+    // Row 3: Guests Sitting Left (facing right)
+    for(let i=0; i<4; i++) {
+        npcs.push({ x: 100, y: 350 + i * 40, width: 20, height: 10, drawWidth: 30, drawHeight: 45, sx: i * 182, sy: 626, sw: 182, sh: 313, yOffset: 35 });
+    }
+    // Row 3: Guests Sitting Right (facing left)
+    for(let i=0; i<4; i++) {
+        npcs.push({ x: 420, y: 350 + i * 40, width: 20, height: 10, drawWidth: 30, drawHeight: 45, sx: (i+4) * 182, sy: 626, sw: 182, sh: 313, yOffset: 35 });
+    }
+    
+    // Row 5: Kids playing near fountain
+    npcs.push({ x: 230, y: 780, width: 20, height: 10, drawWidth: 30, drawHeight: 40, sx: 1217, sy: 1252, sw: 243, sh: 313, yOffset: 30, movePattern: 'circle', t: 0 });
+    npcs.push({ x: 330, y: 780, width: 20, height: 10, drawWidth: 30, drawHeight: 40, sx: 974, sy: 1252, sw: 243, sh: 313, yOffset: 30, movePattern: 'circle', t: Math.PI });
+}
 
 
 // --- CAMERA ---
@@ -430,9 +472,8 @@ function update() {
     }
     
     // --- PARTICLES UPDATE ---
-    // Reduced spawn rate for better performance
     if (Math.random() < 0.02) spawnLeaf();
-    if (Math.random() < 0.01) spawnSplash();
+    if (Math.random() < 0.1) spawnSplash(); // Fountain splash
 
     for (let i = leaves.length - 1; i >= 0; i--) {
         const l = leaves[i];
@@ -444,9 +485,28 @@ function update() {
 
     for (let i = splashes.length - 1; i >= 0; i--) {
         const s = splashes[i];
-        s.radius += 0.2;
-        s.opacity -= 0.02;
+        s.radius += 0.5;
+        s.opacity -= 0.05;
         if (s.opacity <= 0) splashes.splice(i, 1);
+    }
+    
+    for (let b of butterflies) {
+        b.x += b.vx + Math.sin(gameFrame * 0.1) * 0.5;
+        b.y += b.vy + Math.cos(gameFrame * 0.1) * 0.5;
+        b.flapTimer++;
+        if (b.x < 0) b.x = worldWidth;
+        if (b.x > worldWidth) b.x = 0;
+        if (b.y < 0) b.y = worldHeight;
+        if (b.y > worldHeight) b.y = 0;
+    }
+    
+    // Update NPCs
+    for (let npc of npcs) {
+        if (npc.movePattern === 'circle') {
+            npc.t += 0.02;
+            npc.x = 285 + Math.cos(npc.t) * 40;
+            npc.y = 810 + Math.sin(npc.t) * 20;
+        }
     }
 
     gameFrame++;
@@ -458,22 +518,24 @@ function drawPlayer() {
     const drawX = Math.floor(player.x - camera.x - (player.drawWidth - player.width)/2);
     const drawY = Math.floor(player.y - camera.y - (player.drawHeight - player.height) + spriteYOffset);
 
-    ctx.fillStyle = 'rgba(0,0,0,0.3)';
-    ctx.beginPath();
-    ctx.ellipse(player.x - camera.x + player.width/2, player.y - camera.y + player.height, player.width/2, 4, 0, 0, Math.PI * 2);
-    ctx.fill();
-
     let currentSprite;
     if (player.facing === 'up') currentSprite = (player.isWalking && player.walkFrame === 1) ? walkUp : charUp;
     else if (player.facing === 'down') currentSprite = (player.isWalking && player.walkFrame === 1) ? walkDown : charDown;
     else if (player.facing === 'left') currentSprite = (player.isWalking && player.walkFrame === 1) ? walkLeft : charLeft;
     else currentSprite = (player.isWalking && player.walkFrame === 1) ? walkRight : charRight;
     
+    // Draw Shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+    ctx.beginPath();
+    ctx.ellipse(player.x - camera.x + player.width/2, player.y - camera.y + player.height, player.width/2, 4, 0, 0, Math.PI * 2);
+    ctx.fill();
+
     ctx.drawImage(
         currentSprite,
         0, 0, currentSprite.width, currentSprite.height,
         drawX, drawY, player.drawWidth, player.drawHeight
     );
+
 
     // Debug Collisions
     if (window.location.search.includes('debug') || window.location.search.includes('edit')) {
@@ -496,6 +558,55 @@ function render() {
             0, 0, canvas.width, canvas.height
         );
         
+        // Depth Sorting Array
+        let renderables = [];
+        
+        // Add Player
+        renderables.push({ type: 'player', yBase: player.y + player.height });
+        
+        // Add NPCs
+        for(let npc of npcs) {
+            renderables.push({ type: 'npc', ref: npc, yBase: npc.y + npc.height });
+        }
+        
+        // Add Foreground Objects (Trees, Fountains)
+        // Extracting some overlay objects from objects.png to draw OVER characters.
+        // Example: The fountain bottom so characters can walk behind the water.
+        // Approx coordinates in objectsImg: Altar (0,0, 600, 400), Big Tree (700, 300, 300, 400)
+        // We will just add a big tree at the bottom left for depth testing
+        renderables.push({ 
+            type: 'object', 
+            yBase: 700 + 150, 
+            sx: 0, sy: 700, sw: 300, sh: 400, 
+            dx: 50, dy: 700, dw: 150, dh: 200 
+        });
+
+        // Sort by Y-coordinate
+        renderables.sort((a, b) => a.yBase - b.yBase);
+        
+        // Render in sorted order
+        for(let item of renderables) {
+            if (item.type === 'player') {
+                drawPlayer();
+            } else if (item.type === 'npc') {
+                let npc = item.ref;
+                const drawX = Math.floor(npc.x - camera.x - (npc.drawWidth - npc.width)/2);
+                const drawY = Math.floor(npc.y - camera.y - (npc.drawHeight - npc.height) + npc.yOffset);
+                
+                // Shadow
+                ctx.fillStyle = 'rgba(0,0,0,0.3)';
+                ctx.beginPath();
+                ctx.ellipse(npc.x - camera.x + npc.width/2, npc.y - camera.y + npc.height + npc.yOffset - 5, npc.width/2, 4, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.drawImage(npcsImg, npc.sx, npc.sy, npc.sw, npc.sh, drawX, drawY, npc.drawWidth, npc.drawHeight);
+            } else if (item.type === 'object') {
+                // If we want to draw foreground overlapping objects, uncomment below
+                // ctx.drawImage(objectsImg, item.sx, item.sy, item.sw, item.sh, item.dx - camera.x, item.dy - camera.y, item.dw, item.dh);
+            }
+        }
+        
+        // Draw Particles (over everything)
         splashes.forEach(s => {
             const drawX = s.x - camera.x;
             const drawY = s.y - camera.y;
@@ -507,9 +618,20 @@ function render() {
                 ctx.stroke();
             }
         });
-
-        drawPlayer();
         
+        butterflies.forEach(b => {
+            const drawX = b.x - camera.x;
+            const drawY = b.y - camera.y;
+            if (drawX > -20 && drawX < canvas.width + 20 && drawY > -20 && drawY < canvas.height + 20) {
+                ctx.fillStyle = b.color;
+                ctx.beginPath();
+                const wingW = Math.sin(b.flapTimer * 0.5) * b.size;
+                ctx.ellipse(drawX - wingW/2, drawY, Math.abs(wingW), b.size, 0, 0, Math.PI*2);
+                ctx.ellipse(drawX + wingW/2, drawY, Math.abs(wingW), b.size, 0, 0, Math.PI*2);
+                ctx.fill();
+            }
+        });
+
         leaves.forEach(l => {
             const drawX = l.x - camera.x;
             const drawY = l.y - camera.y;
@@ -519,7 +641,7 @@ function render() {
                 ctx.rotate(l.angle);
                 ctx.fillStyle = l.color;
                 ctx.beginPath();
-                ctx.fillRect(-l.size/2, -l.size/4, l.size, l.size/2); // Faster than ellipse on mobile
+                ctx.fillRect(-l.size/2, -l.size/4, l.size, l.size/2); 
                 ctx.fill();
                 ctx.restore();
             }
