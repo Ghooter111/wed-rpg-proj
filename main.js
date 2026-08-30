@@ -13,11 +13,20 @@ const modals = {
     donasi: document.getElementById('donasiModal')
 };
 
+let activeModalId = null;
+
+// Attach close event to all close buttons
 document.querySelectorAll('.close-btn').forEach(btn => {
     btn.addEventListener('click', closeModal);
 });
-
-let activeModalId = null;
+// Attach close event to clicking outside the modal content
+Object.values(modals).forEach(modal => {
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+    }
+});
 
 // Resize canvas to fill window
 function resizeCanvas() {
@@ -602,20 +611,81 @@ function gameLoop() {
 }
 
 // --- MODAL LOGIC ---
-function openModal() {
+function openModal(id) {
+    if (!id) id = 'invitation'; // default
+    if (!modals[id]) return;
+    
     gameState.isModalOpen = true;
-    invitationModal.classList.remove('hidden');
+    activeModalId = id;
+    modals[id].classList.remove('hidden');
     interactionHint.classList.add('hidden');
     for (let key in keys) { keys[key] = false; }
+    
+    // Update active state in bottom nav
+    document.querySelectorAll('.nav-item').forEach(btn => {
+        if (btn.getAttribute('data-target') === id) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
 }
 
 function closeModal() {
-    invitationModal.classList.add('hidden');
-    setTimeout(() => { gameState.isModalOpen = false; }, 200);
+    if (activeModalId && modals[activeModalId]) {
+        modals[activeModalId].classList.add('hidden');
+    }
+    
+    // Reset bottom nav to home active (or none)
+    document.querySelectorAll('.nav-item').forEach(btn => {
+        if (btn.getAttribute('data-target') === 'home') {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+    
+    setTimeout(() => { 
+        gameState.isModalOpen = false; 
+        activeModalId = null;
+    }, 200);
 }
 
-btnCloseModal.addEventListener('click', closeModal);
-invitationModal.addEventListener('click', (e) => { if (e.target === invitationModal) closeModal(); });
+// Cover Overlay Logic
+const btnOpenInvitation = document.getElementById('btnOpenInvitation');
+const coverOverlay = document.getElementById('coverOverlay');
+
+if (btnOpenInvitation) {
+    btnOpenInvitation.addEventListener('click', () => {
+        coverOverlay.classList.add('hidden-cover');
+        
+        // Start audio after user clicks to open
+        if (!audioCtx) initAudio();
+        else if (audioCtx.state === 'suspended') audioCtx.resume();
+        
+        // Remove from DOM after fade out to save performance
+        setTimeout(() => {
+            if (coverOverlay.parentNode) {
+                coverOverlay.parentNode.removeChild(coverOverlay);
+            }
+        }, 1500);
+    });
+}
+
+// Bottom Nav Logic
+document.querySelectorAll('.nav-item').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const target = btn.getAttribute('data-target');
+        if (target === 'home') {
+            closeModal();
+        } else {
+            if (activeModalId !== target) {
+                if (activeModalId) closeModal(); // Close current if open
+                setTimeout(() => openModal(target), activeModalId ? 250 : 0);
+            }
+        }
+    });
+});
 
 gameLoop();
 
