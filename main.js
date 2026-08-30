@@ -41,13 +41,14 @@ const interactionZone = {
     x: 0, y: 0, width: 100, height: 100
 };
 
-// --- BACKGROUND MUSIC (PERFECT LOOP & CONTROLS) ---
+// --- BACKGROUND MUSIC (PLAYLIST & CONTROLS) ---
 let audioCtx;
-let audioBuffer;
+let audioBuffers = [];
 let audioSource;
 let gainNode;
 let isMusicPlaying = false;
 let isMusicMuted = false;
+let currentSongIndex = 0;
 
 async function initAudio() {
     if (audioCtx) return;
@@ -57,26 +58,45 @@ async function initAudio() {
         gainNode.gain.value = document.getElementById('volumeSlider').value;
         gainNode.connect(audioCtx.destination);
         
-        const response = await fetch('./assets/music/Where_the_Wind_Bends.mp3');
-        const arrayBuffer = await response.arrayBuffer();
-        audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+        const playlist = [
+            './assets/music/Valley_Waking.mp3',
+            './assets/music/Where_the_Wind_Bends.mp3'
+        ];
         
-        playPerfectLoop();
+        for (let url of playlist) {
+            const response = await fetch(url);
+            const arrayBuffer = await response.arrayBuffer();
+            const buffer = await audioCtx.decodeAudioData(arrayBuffer);
+            audioBuffers.push(buffer);
+        }
+        
+        playNextSong();
     } catch (e) {
         console.error("Audio init error:", e);
     }
 }
 
-function playPerfectLoop() {
-    if (!audioCtx || !audioBuffer || isMusicPlaying) return;
-    audioSource = audioCtx.createBufferSource();
-    audioSource.buffer = audioBuffer;
-    audioSource.loop = true; // Perfect gapless looping!
+function playNextSong() {
+    if (!audioCtx || audioBuffers.length === 0) return;
     
-    // Fade in over 2 seconds
+    audioSource = audioCtx.createBufferSource();
+    audioSource.buffer = audioBuffers[currentSongIndex];
+    audioSource.loop = false; // Don't loop individual song, let it transition
+    
+    audioSource.onended = () => {
+        currentSongIndex = (currentSongIndex + 1) % audioBuffers.length;
+        playNextSong();
+    };
+    
     const targetVolume = isMusicMuted ? 0 : parseFloat(document.getElementById('volumeSlider').value);
-    gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
-    gainNode.gain.linearRampToValueAtTime(targetVolume, audioCtx.currentTime + 2);
+    
+    // Only fade in if it's the first time playing to avoid dipping volume between songs
+    if (!isMusicPlaying) {
+        gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+        gainNode.gain.linearRampToValueAtTime(targetVolume, audioCtx.currentTime + 2);
+    } else {
+        gainNode.gain.setValueAtTime(targetVolume, audioCtx.currentTime);
+    }
     
     audioSource.connect(gainNode);
     audioSource.start(0);
