@@ -215,11 +215,11 @@ function initNPCs() {
     
     // Row 3: Guests Sitting Left (facing right)
     for(let i=0; i<4; i++) {
-        npcs.push({ x: 100, y: 350 + i * 40, width: 20, height: 10, drawWidth: 30, drawHeight: 45, sx: i * 182, sy: 626, sw: 182, sh: 313, yOffset: 35 });
+        npcs.push({ x: 90, y: 830 + i * 35, width: 20, height: 10, drawWidth: 30, drawHeight: 45, sx: i * 182, sy: 626, sw: 182, sh: 313, yOffset: 35 });
     }
     // Row 3: Guests Sitting Right (facing left)
     for(let i=0; i<4; i++) {
-        npcs.push({ x: 420, y: 350 + i * 40, width: 20, height: 10, drawWidth: 30, drawHeight: 45, sx: (i+4) * 182, sy: 626, sw: 182, sh: 313, yOffset: 35 });
+        npcs.push({ x: 440, y: 830 + i * 35, width: 20, height: 10, drawWidth: 30, drawHeight: 45, sx: (i+4) * 182, sy: 626, sw: 182, sh: 313, yOffset: 35 });
     }
     
     // Row 5: Kids playing near fountain
