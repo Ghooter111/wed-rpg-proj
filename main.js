@@ -18,7 +18,7 @@ resizeCanvas();
 const gameState = {
     isModalOpen: false,
     assetsLoaded: false,
-    assetsToLoad: 10, 
+    assetsToLoad: 9,
     assetsLoadedCount: 0
 };
 
@@ -149,7 +149,6 @@ let worldHeight = window.innerHeight;
 // --- PARTICLES ---
 const leaves = [];
 const splashes = [];
-const butterflies = [];
 
 function spawnLeaf() {
     leaves.push({
@@ -166,31 +165,15 @@ function spawnLeaf() {
 
 function spawnSplash() {
     splashes.push({
-        x: 285 + Math.random() * 10,
-        y: 810 + Math.random() * 10,
+        x: worldWidth * 0.75 + Math.random() * (worldWidth * 0.2),
+        y: worldHeight * 0.4 + Math.random() * (worldHeight * 0.2),
         radius: 0,
         maxRadius: Math.random() * 10 + 5,
         opacity: 0.8
     });
 }
 
-function spawnButterfly() {
-    butterflies.push({
-        x: Math.random() * worldWidth,
-        y: Math.random() * worldHeight,
-        vx: (Math.random() - 0.5) * 2,
-        vy: (Math.random() - 0.5) * 2,
-        size: 3,
-        flapTimer: 0,
-        color: Math.random() > 0.5 ? '#3498db' : '#e74c3c'
-    });
-}
-
-// Initial butterflies
-for(let i=0; i<15; i++) spawnButterfly();
-
-const bgImage = new Image(); bgImage.onload = assetLoaded; bgImage.src = './assets/bg_final.jpg';
-const fgImage = new Image(); fgImage.onload = assetLoaded; fgImage.src = './assets/fg_final.png';
+const bgImage = new Image(); bgImage.onload = assetLoaded; bgImage.src = './assets/background.jpg';
 
 const charUp = new Image(); charUp.onload = assetLoaded; charUp.src = './assets/char_left.png'; // ATAS (Gambar 3)
 const charDown = new Image(); charDown.onload = assetLoaded; charDown.src = './assets/char_down.png'; // BAWAH (Gambar 2)
@@ -201,8 +184,6 @@ const walkUp = new Image(); walkUp.onload = assetLoaded; walkUp.src = './assets/
 const walkDown = new Image(); walkDown.onload = assetLoaded; walkDown.src = './assets/walk_down.png'; // JALAN BAWAH (Gambar 6)
 const walkLeft = new Image(); walkLeft.onload = assetLoaded; walkLeft.src = './assets/walk_right.png'; // JALAN KIRI (Gambar 8)
 const walkRight = new Image(); walkRight.onload = assetLoaded; walkRight.src = './assets/walk_left.png'; // JALAN KANAN (Gambar 7)
-
-
 
 
 // --- CAMERA ---
@@ -449,8 +430,9 @@ function update() {
     }
     
     // --- PARTICLES UPDATE ---
+    // Reduced spawn rate for better performance
     if (Math.random() < 0.02) spawnLeaf();
-    if (Math.random() < 0.1) spawnSplash();
+    if (Math.random() < 0.01) spawnSplash();
 
     for (let i = leaves.length - 1; i >= 0; i--) {
         const l = leaves[i];
@@ -462,19 +444,9 @@ function update() {
 
     for (let i = splashes.length - 1; i >= 0; i--) {
         const s = splashes[i];
-        s.radius += 0.5;
-        s.opacity -= 0.05;
+        s.radius += 0.2;
+        s.opacity -= 0.02;
         if (s.opacity <= 0) splashes.splice(i, 1);
-    }
-    
-    for (let b of butterflies) {
-        b.x += b.vx + Math.sin(gameFrame * 0.1) * 0.5;
-        b.y += b.vy + Math.cos(gameFrame * 0.1) * 0.5;
-        b.flapTimer++;
-        if (b.x < 0) b.x = worldWidth;
-        if (b.x > worldWidth) b.x = 0;
-        if (b.y < 0) b.y = worldHeight;
-        if (b.y > worldHeight) b.y = 0;
     }
 
     gameFrame++;
@@ -486,17 +458,17 @@ function drawPlayer() {
     const drawX = Math.floor(player.x - camera.x - (player.drawWidth - player.width)/2);
     const drawY = Math.floor(player.y - camera.y - (player.drawHeight - player.height) + spriteYOffset);
 
+    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+    ctx.beginPath();
+    ctx.ellipse(player.x - camera.x + player.width/2, player.y - camera.y + player.height, player.width/2, 4, 0, 0, Math.PI * 2);
+    ctx.fill();
+
     let currentSprite;
     if (player.facing === 'up') currentSprite = (player.isWalking && player.walkFrame === 1) ? walkUp : charUp;
     else if (player.facing === 'down') currentSprite = (player.isWalking && player.walkFrame === 1) ? walkDown : charDown;
     else if (player.facing === 'left') currentSprite = (player.isWalking && player.walkFrame === 1) ? walkLeft : charLeft;
     else currentSprite = (player.isWalking && player.walkFrame === 1) ? walkRight : charRight;
     
-    ctx.fillStyle = 'rgba(0,0,0,0.3)';
-    ctx.beginPath();
-    ctx.ellipse(player.x - camera.x + player.width/2, player.y - camera.y + player.height, player.width/2, 4, 0, 0, Math.PI * 2);
-    ctx.fill();
-
     ctx.drawImage(
         currentSprite,
         0, 0, currentSprite.width, currentSprite.height,
@@ -524,43 +496,6 @@ function render() {
             0, 0, canvas.width, canvas.height
         );
         
-        let renderables = [];
-        
-        renderables.push({ type: 'player', yBase: player.y + player.height });
-        
-        // Because fg_v3.png has transparent background, these rects ONLY draw the objects!
-        const fgRegions = [
-            // Center Big Tree (above fountain)
-            { sx: 200, sy: 570, sw: 170, sh: 150, yBase: 710 }, 
-            // Left Tree Group
-            { sx: 0, sy: 550, sw: 140, sh: 180, yBase: 730 },
-            // Right Tree Group
-            { sx: 430, sy: 550, sw: 140, sh: 180, yBase: 730 },
-            // Gazebo Top
-            { sx: 70, sy: 310, sw: 120, sh: 120, yBase: 420 },
-            // Altar Top
-            { sx: 150, sy: 40, sw: 280, sh: 130, yBase: 160 },
-            // Stalls Left
-            { sx: 70, sy: 620, sw: 100, sh: 120, yBase: 740 },
-            // Stalls Right
-            { sx: 390, sy: 620, sw: 110, sh: 120, yBase: 740 }
-        ];
-
-        for (let fg of fgRegions) {
-            renderables.push({ type: 'fg_overlay', ref: fg, yBase: fg.yBase });
-        }
-
-        renderables.sort((a, b) => a.yBase - b.yBase);
-        
-        for(let item of renderables) {
-            if (item.type === 'player') {
-                drawPlayer();
-            } else if (item.type === 'fg_overlay') {
-                let fg = item.ref;
-                ctx.drawImage(fgImage, fg.sx, fg.sy, fg.sw, fg.sh, fg.sx - camera.x, fg.sy - camera.y, fg.sw, fg.sh);
-            }
-        }
-        
         splashes.forEach(s => {
             const drawX = s.x - camera.x;
             const drawY = s.y - camera.y;
@@ -572,20 +507,9 @@ function render() {
                 ctx.stroke();
             }
         });
-        
-        butterflies.forEach(b => {
-            const drawX = b.x - camera.x;
-            const drawY = b.y - camera.y;
-            if (drawX > -20 && drawX < canvas.width + 20 && drawY > -20 && drawY < canvas.height + 20) {
-                ctx.fillStyle = b.color;
-                ctx.beginPath();
-                const wingW = Math.sin(b.flapTimer * 0.5) * b.size;
-                ctx.ellipse(drawX - wingW/2, drawY, Math.abs(wingW), b.size, 0, 0, Math.PI*2);
-                ctx.ellipse(drawX + wingW/2, drawY, Math.abs(wingW), b.size, 0, 0, Math.PI*2);
-                ctx.fill();
-            }
-        });
 
+        drawPlayer();
+        
         leaves.forEach(l => {
             const drawX = l.x - camera.x;
             const drawY = l.y - camera.y;
@@ -595,7 +519,7 @@ function render() {
                 ctx.rotate(l.angle);
                 ctx.fillStyle = l.color;
                 ctx.beginPath();
-                ctx.fillRect(-l.size/2, -l.size/4, l.size, l.size/2); 
+                ctx.fillRect(-l.size/2, -l.size/4, l.size, l.size/2); // Faster than ellipse on mobile
                 ctx.fill();
                 ctx.restore();
             }
