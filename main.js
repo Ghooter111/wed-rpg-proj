@@ -562,20 +562,37 @@ function render() {
 
         drawPlayer();
         
-        leaves.forEach(l => {
-            const drawX = l.x - camera.x;
-            const drawY = l.y - camera.y;
-            if (drawX > -20 && drawX < canvas.width + 20 && drawY > -20 && drawY < canvas.height + 20) {
-                ctx.save();
-                ctx.translate(drawX, drawY);
-                ctx.rotate(l.angle);
-                ctx.fillStyle = l.color;
-                ctx.beginPath();
-                ctx.fillRect(-l.size/2, -l.size/4, l.size, l.size/2); // Faster than ellipse on mobile
-                ctx.fill();
-                ctx.restore();
-            }
-        });
+        // Draw particles
+        for (let l of leaves) {
+            ctx.save();
+            ctx.translate(l.x - camera.x, l.y - camera.y);
+            ctx.rotate(l.angle);
+            ctx.fillStyle = '#6ab04c';
+            ctx.globalAlpha = 0.8;
+            ctx.fillRect(-l.size/2, -l.size/2, l.size, l.size);
+            ctx.restore();
+        }
+        
+        for (let s of splashes) {
+            ctx.fillStyle = `rgba(135, 206, 235, ${s.alpha})`;
+            ctx.beginPath();
+            ctx.arc(s.x - camera.x, s.y - camera.y, s.size, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        // --- DEBUG: DRAW INTERACTION ZONES ---
+        ctx.fillStyle = 'rgba(255, 255, 0, 0.3)'; // Yellow transparent
+        ctx.strokeStyle = 'yellow';
+        ctx.lineWidth = 2;
+        for (let zone of interactionZones) {
+            ctx.fillRect(zone.x - camera.x, zone.y - camera.y, zone.w, zone.h);
+            ctx.strokeRect(zone.x - camera.x, zone.y - camera.y, zone.w, zone.h);
+            
+            ctx.fillStyle = 'white';
+            ctx.font = '16px monospace';
+            ctx.fillText(zone.id, zone.x - camera.x + 10, zone.y - camera.y + 20);
+            ctx.fillStyle = 'rgba(255, 255, 0, 0.3)';
+        }
         
     } else {
         ctx.fillStyle = 'white';
