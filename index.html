@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Undangan Pernikahan RPG</title>
+    <link rel="stylesheet" href="./style.css">
+    <!-- Google Fonts for elegant typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <div id="errorDisplay" style="position: absolute; top: 0; left: 0; background: red; color: white; z-index: 9999; padding: 10px; font-family: monospace; font-size: 14px; display: none;"></div>
+    <textarea id="editorOutput" style="position: absolute; top: 10px; right: 10px; width: 300px; height: 400px; z-index: 9999; display: none; font-family: monospace;" readonly></textarea>
+    <script>
+        window.onerror = function(message, source, lineno, colno, error) {
+            const errDisplay = document.getElementById('errorDisplay');
+            errDisplay.style.display = 'block';
+            errDisplay.innerText += message + ' at ' + source + ':' + lineno + ':' + colno + '\n';
+        };
+    </script>
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- UI Overlay for Mobile Controls -->
+    <div id="uiOverlay" class="ui-overlay hidden-on-desktop">
+      <div class="d-pad">
+        <button id="btnUp" class="d-pad-btn up">▲</button>
+        <button id="btnLeft" class="d-pad-btn left">◀</button>
+        <button id="btnRight" class="d-pad-btn right">▶</button>
+        <button id="btnDown" class="d-pad-btn down">▼</button>
+      </div>
+      <div class="action-buttons">
+        <button id="btnAction" class="action-btn">E</button>
+      </div>
+    </div>
+
+    <!-- Instructions Overlay -->
+    <div id="instructions">
+      <p>Gunakan <b>WASD</b> atau <b>Panah</b> untuk bergerak.<br>Dekati bangunan dan tekan <b>Spasi</b> atau klik <b>E</b>.</p>
+    </div>
+
+    <!-- Interaction Hint Overlay (Shows when near building) -->
+    <div id="interactionHint" class="hidden">
+      <p>Tekan 'E' untuk masuk</p>
+    </div>
+
+    <!-- Wedding Invitation Modal -->
+    <div id="invitationModal" class="modal hidden">
+      <div class="modal-content">
+        <button id="btnCloseModal" class="close-btn">&times;</button>
+        <div class="invitation-header">
+          <h1>Romeo & Juliet</h1>
+          <p class="subtitle">We Are Getting Married</p>
+        </div>
+        
+        <div class="invitation-body">
+          <div class="couple-photo-container">
+            <!-- We will load an image here -->
+            <img src="/couple.jpg" alt="Foto Pasangan" class="couple-photo" id="couplePhoto" onerror="this.src='https://via.placeholder.com/300x400?text=Foto+Pengantin'">
+          </div>
+          <div class="details">
+            <div class="detail-item">
+              <h3>Tanggal</h3>
+              <p>Minggu, 12 Desember 2026</p>
+            </div>
+            <div class="detail-item">
+              <h3>Waktu</h3>
+              <p>09.00 WIB - Selesai</p>
+            </div>
+            <div class="detail-item">
+              <h3>Lokasi</h3>
+              <p>Gedung Serbaguna Impian<br>Jl. Cinta Damai No. 1, Jakarta</p>
+            </div>
+          </div>
+        </div>
+        <div class="invitation-footer">
+          <p>Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir untuk memberikan doa restu.</p>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>

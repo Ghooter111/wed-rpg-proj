@@ -1,0 +1,282 @@
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body, html {
+    width: 100%;
+    height: 100%;
+    overflow: hidden; /* Prevent scrolling */
+    background-color: #2c3e50; /* Fallback color */
+    font-family: 'Lato', sans-serif;
+    user-select: none; /* Prevent text selection while playing */
+}
+
+/* Game Canvas */
+#gameCanvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    image-rendering: pixelated; /* Crisp pixel art look if we use it */
+}
+
+/* Instructions Overlay */
+#instructions {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-size: 14px;
+    pointer-events: none;
+    z-index: 10;
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Interaction Hint */
+#interactionHint {
+    position: absolute;
+    bottom: 120px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 215, 0, 0.9);
+    color: #1a1a1a;
+    padding: 10px 20px;
+    border-radius: 30px;
+    font-weight: bold;
+    font-size: 16px;
+    pointer-events: none;
+    z-index: 15;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    animation: bounce 1.5s infinite;
+    transition: opacity 0.3s ease;
+}
+
+#interactionHint.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translate(-50%, 0); }
+    50% { transform: translate(-50%, -10px); }
+}
+
+/* Mobile UI Overlay (D-Pad & Action Button) */
+.ui-overlay {
+    position: absolute;
+    bottom: 30px;
+    left: 0;
+    width: 100%;
+    padding: 0 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    pointer-events: none; /* Let clicks pass through empty areas */
+    z-index: 20;
+}
+
+/* Media query to hide on desktop */
+@media (min-width: 768px) {
+    .hidden-on-desktop {
+        display: none !important;
+    }
+}
+
+.d-pad {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    pointer-events: auto;
+}
+
+.d-pad-btn {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    border-radius: 8px;
+    color: white;
+    font-size: 18px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(5px);
+    cursor: pointer;
+    transition: background 0.1s;
+}
+
+.d-pad-btn:active, .d-pad-btn.active {
+    background: rgba(255, 255, 255, 0.6);
+}
+
+.d-pad-btn.up { top: 0; left: 40px; }
+.d-pad-btn.left { top: 40px; left: 0; }
+.d-pad-btn.right { top: 40px; left: 80px; }
+.d-pad-btn.down { top: 80px; left: 40px; }
+
+.action-buttons {
+    pointer-events: auto;
+}
+
+.action-btn {
+    width: 70px;
+    height: 70px;
+    background: rgba(255, 215, 0, 0.4);
+    border: 3px solid rgba(255, 215, 0, 0.8);
+    border-radius: 50%;
+    color: white;
+    font-size: 28px;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(5px);
+    cursor: pointer;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+    transition: transform 0.1s, background 0.1s;
+}
+
+.action-btn:active, .action-btn.active {
+    background: rgba(255, 215, 0, 0.7);
+    transform: scale(0.95);
+}
+
+/* Modal Overlay (The Invitation) */
+.modal {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    opacity: 1;
+    transition: opacity 0.5s ease;
+}
+
+.modal.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.modal-content {
+    background: linear-gradient(135deg, #ffffff, #f0f4f8);
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    border-radius: 20px;
+    padding: 40px 30px;
+    position: relative;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    overflow-y: auto;
+    text-align: center;
+    transform: scale(1);
+    transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.modal.hidden .modal-content {
+    transform: scale(0.8);
+}
+
+.close-btn {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    background: none;
+    border: none;
+    font-size: 30px;
+    color: #666;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.close-btn:hover {
+    color: #000;
+}
+
+/* Invitation Typography & Layout */
+.invitation-header {
+    margin-bottom: 30px;
+}
+
+.invitation-header h1 {
+    font-family: 'Cinzel', serif;
+    color: #2c3e50;
+    font-size: 2.5rem;
+    margin-bottom: 5px;
+}
+
+.invitation-header .subtitle {
+    font-family: 'Lato', sans-serif;
+    color: #7f8c8d;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+}
+
+.invitation-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 25px;
+}
+
+.couple-photo-container {
+    width: 200px;
+    height: 250px;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+    border: 5px solid white;
+}
+
+.couple-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.details {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.detail-item {
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.detail-item h3 {
+    font-family: 'Cinzel', serif;
+    color: #d4af37; /* Gold */
+    font-size: 1.2rem;
+    margin-bottom: 5px;
+}
+
+.detail-item p {
+    color: #34495e;
+    line-height: 1.5;
+}
+
+.invitation-footer {
+    margin-top: 30px;
+    font-style: italic;
+    color: #7f8c8d;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
