@@ -30,7 +30,7 @@ const player = {
     height: 12, 
     drawWidth: 20,  
     drawHeight: 40, 
-    speed: 3,
+    speed: 1.5,
     facing: 'up', 
     isWalking: false,
     walkFrame: 0,
@@ -40,6 +40,90 @@ const player = {
 const interactionZone = {
     x: 0, y: 0, width: 100, height: 100
 };
+
+// --- BACKGROUND MUSIC (PERFECT LOOP & CONTROLS) ---
+let audioCtx;
+let audioBuffer;
+let audioSource;
+let gainNode;
+let isMusicPlaying = false;
+let isMusicMuted = false;
+
+async function initAudio() {
+    if (audioCtx) return;
+    try {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        gainNode = audioCtx.createGain();
+        gainNode.gain.value = document.getElementById('volumeSlider').value;
+        gainNode.connect(audioCtx.destination);
+        
+        const response = await fetch('/music/looperman-l-2647028-0173271-kiestyleproductions-town-at-night-rpg-x-animal-crossing-type-loop.wav');
+        const arrayBuffer = await response.arrayBuffer();
+        audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+        
+        playPerfectLoop();
+    } catch (e) {
+        console.error("Audio init error:", e);
+    }
+}
+
+function playPerfectLoop() {
+    if (!audioCtx || !audioBuffer || isMusicPlaying) return;
+    audioSource = audioCtx.createBufferSource();
+    audioSource.buffer = audioBuffer;
+    audioSource.loop = true; // Perfect gapless looping!
+    
+    // Fade in over 2 seconds
+    const targetVolume = isMusicMuted ? 0 : parseFloat(document.getElementById('volumeSlider').value);
+    gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+    gainNode.gain.linearRampToValueAtTime(targetVolume, audioCtx.currentTime + 2);
+    
+    audioSource.connect(gainNode);
+    audioSource.start(0);
+    isMusicPlaying = true;
+}
+
+// Play music on first interaction
+function firstInteraction() {
+    if (!audioCtx) initAudio();
+    else if (audioCtx.state === 'suspended') audioCtx.resume();
+    
+    window.removeEventListener('keydown', firstInteraction);
+    window.removeEventListener('click', firstInteraction);
+}
+window.addEventListener('keydown', firstInteraction);
+window.addEventListener('click', firstInteraction);
+
+// UI Controls
+const btnToggleMusic = document.getElementById('btnToggleMusic');
+const volumeSlider = document.getElementById('volumeSlider');
+
+btnToggleMusic.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (!audioCtx) {
+        initAudio();
+        return;
+    }
+    
+    if (isMusicMuted) {
+        gainNode.gain.value = volumeSlider.value;
+        btnToggleMusic.innerText = '🎵';
+        isMusicMuted = false;
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+    } else {
+        gainNode.gain.value = 0;
+        btnToggleMusic.innerText = '🔇';
+        isMusicMuted = true;
+    }
+});
+
+volumeSlider.addEventListener('input', (e) => {
+    e.stopPropagation();
+    if (gainNode && !isMusicMuted) {
+        gainNode.gain.value = e.target.value;
+    }
+});
+volumeSlider.addEventListener('click', (e) => e.stopPropagation());
 
 function assetLoaded() {
     gameState.assetsLoadedCount++;
@@ -471,6 +555,14 @@ btnCloseModal.addEventListener('click', closeModal);
 invitationModal.addEventListener('click', (e) => { if (e.target === invitationModal) closeModal(); });
 
 gameLoop();
+
+// Hide instructions after 2 seconds
+setTimeout(() => {
+    const instructions = document.getElementById('instructions');
+    if (instructions) {
+        instructions.classList.add('fade-out');
+    }
+}, 2000);
 
 // --- COLLISION EDITOR ---
 let isEditing = false;
