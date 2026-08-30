@@ -57,7 +57,7 @@ async function initAudio() {
         gainNode.gain.value = document.getElementById('volumeSlider').value;
         gainNode.connect(audioCtx.destination);
         
-        const response = await fetch('./assets/music/looperman-l-2647028-0173271-kiestyleproductions-town-at-night-rpg-x-animal-crossing-type-loop.wav');
+        const response = await fetch('./assets/music/Valley_Waking.mp3');
         const arrayBuffer = await response.arrayBuffer();
         audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
         
