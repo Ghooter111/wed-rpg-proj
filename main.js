@@ -209,6 +209,31 @@ const walkRight = new Image(); walkRight.onload = assetLoaded; walkRight.src = '
 // --- CAMERA ---
 const camera = { x: 0, y: 0 };
 
+// --- COLLISION BOUNDARIES ---
+const collisions = [
+    { x: 210, y: 570, w: 150, h: 140 }, // Center Big Tree
+    { x: 0, y: 560, w: 120, h: 150 },   // Left Tree Group
+    { x: 450, y: 560, w: 120, h: 150 }, // Right Tree Group
+    { x: 230, y: 760, w: 110, h: 90 },  // Fountain
+    { x: 160, y: 50, w: 250, h: 110 },  // Altar Top
+    { x: 70, y: 620, w: 100, h: 110 },  // Stalls Left
+    { x: 400, y: 620, w: 100, h: 110 }, // Stalls Right
+    { x: 70, y: 310, w: 120, h: 110 }   // Gazebo
+];
+
+function checkCollision(nx, ny) {
+    // Player feet collision box
+    const pBox = { x: nx + 5, y: ny + 20, w: player.width - 10, h: player.height - 20 };
+    for (let c of collisions) {
+        if (pBox.x < c.x + c.w && pBox.x + pBox.w > c.x &&
+            pBox.y < c.y + c.h && pBox.y + pBox.h > c.y) {
+            return true;
+        }
+    }
+    return false;
+}
+
+
 
 // --- INPUT HANDLING ---
 const keys = {
@@ -375,6 +400,14 @@ const collisions = [
     { x: 378, y: 85, w: 12, h: 41 },
     { x: 182, y: 80, w: 12, h: 39 },
     { x: 267, y: 131, w: 38, h: 44 },
+    
+    // Fix for floating on trees and stalls (making the leafy/top parts solid)
+    { x: 190, y: 550, w: 180, h: 140 }, // Center Big Tree
+    { x: 0, y: 540, w: 130, h: 160 },   // Left Tree Group
+    { x: 440, y: 540, w: 130, h: 160 }, // Right Tree Group
+    { x: 70, y: 620, w: 100, h: 100 },  // Stalls Left
+    { x: 400, y: 620, w: 100, h: 100 }, // Stalls Right
+    { x: 160, y: 40, w: 250, h: 110 }   // Altar Top
 ];
 
 function checkCollision(newX, newY, width, height) {
