@@ -419,9 +419,9 @@ function update() {
         }
     }
 
-    // Update Camera
-    camera.x = Math.max(0, Math.min(player.x - canvas.width / 2, worldWidth - canvas.width));
-    camera.y = Math.max(0, Math.min(player.y - canvas.height / 2, worldHeight - canvas.height));
+    // Update Camera (Math.floor to prevent subpixel rendering lag on mobile)
+    camera.x = Math.floor(Math.max(0, Math.min(player.x - canvas.width / 2, worldWidth - canvas.width)));
+    camera.y = Math.floor(Math.max(0, Math.min(player.y - canvas.height / 2, worldHeight - canvas.height)));
 
     if (isNearInteractionZone()) {
         interactionHint.classList.remove('hidden');
@@ -430,8 +430,9 @@ function update() {
     }
     
     // --- PARTICLES UPDATE ---
-    if (Math.random() < 0.05) spawnLeaf();
-    if (Math.random() < 0.02) spawnSplash();
+    // Reduced spawn rate for better performance
+    if (Math.random() < 0.02) spawnLeaf();
+    if (Math.random() < 0.01) spawnSplash();
 
     for (let i = leaves.length - 1; i >= 0; i--) {
         const l = leaves[i];
@@ -454,8 +455,8 @@ function update() {
 // --- DRAWING ---
 function drawPlayer() {
     const spriteYOffset = 4; // Offset to account for transparent space at the bottom of the sprite image
-    const drawX = player.x - camera.x - (player.drawWidth - player.width)/2;
-    const drawY = player.y - camera.y - (player.drawHeight - player.height) + spriteYOffset;
+    const drawX = Math.floor(player.x - camera.x - (player.drawWidth - player.width)/2);
+    const drawY = Math.floor(player.y - camera.y - (player.drawHeight - player.height) + spriteYOffset);
 
     ctx.fillStyle = 'rgba(0,0,0,0.3)';
     ctx.beginPath();
@@ -518,7 +519,7 @@ function render() {
                 ctx.rotate(l.angle);
                 ctx.fillStyle = l.color;
                 ctx.beginPath();
-                ctx.ellipse(0, 0, l.size, l.size / 2, 0, 0, Math.PI * 2);
+                ctx.fillRect(-l.size/2, -l.size/4, l.size, l.size/2); // Faster than ellipse on mobile
                 ctx.fill();
                 ctx.restore();
             }
