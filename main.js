@@ -18,7 +18,7 @@ resizeCanvas();
 const gameState = {
     isModalOpen: false,
     assetsLoaded: false,
-    assetsToLoad: 11, // Added npcs and foreground
+    assetsToLoad: 10, 
     assetsLoadedCount: 0
 };
 
@@ -139,8 +139,6 @@ function assetLoaded() {
         interactionZone.y = 50; 
         interactionZone.width = 200;
         interactionZone.height = 150;
-        
-        initNPCs();
     }
 }
 
@@ -191,9 +189,8 @@ function spawnButterfly() {
 // Initial butterflies
 for(let i=0; i<15; i++) spawnButterfly();
 
-const bgImage = new Image(); bgImage.onload = assetLoaded; bgImage.src = './assets/bg_v3.jpg';
-const npcsImg = new Image(); npcsImg.onload = assetLoaded; npcsImg.src = './assets/npcs_v3.png';
-const fgImage = new Image(); fgImage.onload = assetLoaded; fgImage.src = './assets/fg_v3.png';
+const bgImage = new Image(); bgImage.onload = assetLoaded; bgImage.src = './assets/bg_final.jpg';
+const fgImage = new Image(); fgImage.onload = assetLoaded; fgImage.src = './assets/fg_final.png';
 
 const charUp = new Image(); charUp.onload = assetLoaded; charUp.src = './assets/char_left.png'; // ATAS (Gambar 3)
 const charDown = new Image(); charDown.onload = assetLoaded; charDown.src = './assets/char_down.png'; // BAWAH (Gambar 2)
@@ -205,27 +202,7 @@ const walkDown = new Image(); walkDown.onload = assetLoaded; walkDown.src = './a
 const walkLeft = new Image(); walkLeft.onload = assetLoaded; walkLeft.src = './assets/walk_right.png'; // JALAN KIRI (Gambar 8)
 const walkRight = new Image(); walkRight.onload = assetLoaded; walkRight.src = './assets/walk_left.png'; // JALAN KANAN (Gambar 7)
 
-// --- NPCS ---
-const npcs = [];
-function initNPCs() {
-    // Priest
-    npcs.push({ x: 260, y: 150, width: 30, height: 10, drawWidth: 40, drawHeight: 60, sx: 974, sy: 0, sw: 487, sh: 313, yOffset: 50 });
-    // Couple
-    npcs.push({ x: 200, y: 160, width: 40, height: 10, drawWidth: 80, drawHeight: 60, sx: 0, sy: 0, sw: 974, sh: 313, yOffset: 50 });
-    
-    // Guests Sitting Left (facing right)
-    for(let i=0; i<4; i++) {
-        npcs.push({ x: 90, y: 830 + i * 35, width: 20, height: 10, drawWidth: 30, drawHeight: 45, sx: i * 182, sy: 626, sw: 182, sh: 313, yOffset: 35 });
-    }
-    // Guests Sitting Right (facing left)
-    for(let i=0; i<4; i++) {
-        npcs.push({ x: 440, y: 830 + i * 35, width: 20, height: 10, drawWidth: 30, drawHeight: 45, sx: (i+4) * 182, sy: 626, sw: 182, sh: 313, yOffset: 35 });
-    }
-    
-    // Kids playing near fountain
-    npcs.push({ x: 230, y: 780, width: 20, height: 10, drawWidth: 30, drawHeight: 40, sx: 1217, sy: 1252, sw: 243, sh: 313, yOffset: 30, movePattern: 'circle', t: 0 });
-    npcs.push({ x: 330, y: 780, width: 20, height: 10, drawWidth: 30, drawHeight: 40, sx: 974, sy: 1252, sw: 243, sh: 313, yOffset: 30, movePattern: 'circle', t: Math.PI });
-}
+
 
 
 // --- CAMERA ---
@@ -499,14 +476,6 @@ function update() {
         if (b.y < 0) b.y = worldHeight;
         if (b.y > worldHeight) b.y = 0;
     }
-    
-    for (let npc of npcs) {
-        if (npc.movePattern === 'circle') {
-            npc.t += 0.02;
-            npc.x = 285 + Math.cos(npc.t) * 40;
-            npc.y = 810 + Math.sin(npc.t) * 20;
-        }
-    }
 
     gameFrame++;
 }
@@ -559,10 +528,6 @@ function render() {
         
         renderables.push({ type: 'player', yBase: player.y + player.height });
         
-        for(let npc of npcs) {
-            renderables.push({ type: 'npc', ref: npc, yBase: npc.y + npc.height });
-        }
-        
         // Because fg_v3.png has transparent background, these rects ONLY draw the objects!
         const fgRegions = [
             // Center Big Tree (above fountain)
@@ -590,17 +555,6 @@ function render() {
         for(let item of renderables) {
             if (item.type === 'player') {
                 drawPlayer();
-            } else if (item.type === 'npc') {
-                let npc = item.ref;
-                const drawX = Math.floor(npc.x - camera.x - (npc.drawWidth - npc.width)/2);
-                const drawY = Math.floor(npc.y - camera.y - (npc.drawHeight - npc.height) + npc.yOffset);
-                
-                ctx.fillStyle = 'rgba(0,0,0,0.3)';
-                ctx.beginPath();
-                ctx.ellipse(npc.x - camera.x + npc.width/2, npc.y - camera.y + npc.height + npc.yOffset - 5, npc.width/2, 4, 0, 0, Math.PI * 2);
-                ctx.fill();
-
-                ctx.drawImage(npcsImg, npc.sx, npc.sy, npc.sw, npc.sh, drawX, drawY, npc.drawWidth, npc.drawHeight);
             } else if (item.type === 'fg_overlay') {
                 let fg = item.ref;
                 ctx.drawImage(fgImage, fg.sx, fg.sy, fg.sw, fg.sh, fg.sx - camera.x, fg.sy - camera.y, fg.sw, fg.sh);
