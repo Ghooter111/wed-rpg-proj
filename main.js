@@ -57,7 +57,7 @@ async function initAudio() {
         gainNode.gain.value = document.getElementById('volumeSlider').value;
         gainNode.connect(audioCtx.destination);
         
-        const response = await fetch('./assets/music/Valley_Waking.mp3');
+        const response = await fetch('./assets/music/Where_the_Wind_Bends.mp3');
         const arrayBuffer = await response.arrayBuffer();
         audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
         
