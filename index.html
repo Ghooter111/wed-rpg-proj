@@ -83,6 +83,80 @@
       </div>
     </div>
 
-    <script type="module" src="./main.js"></script>
+    <!-- Alamat Modal -->
+    <div id="alamatModal" class="modal hidden">
+      <div class="modal-content">
+        <button class="close-btn">&times;</button>
+        <div class="invitation-header">
+          <h1>Alamat Lengkap</h1>
+          <p class="subtitle">Lokasi Acara</p>
+        </div>
+        <div class="invitation-body">
+          <p style="text-align: center; margin-bottom: 20px;">Gedung Serbaguna Impian<br>Jl. Cinta Damai No. 1, Jakarta Pusat, DKI Jakarta 10110</p>
+          <div style="background: #e0e0e0; width: 100%; height: 200px; display: flex; align-items: center; justify-content: center; border-radius: 8px;">
+            <p style="color: #666;">[Peta Google Maps akan muncul di sini]</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Galeri Pre Wed Modal -->
+    <div id="galeriModal" class="modal hidden">
+      <div class="modal-content" style="max-width: 600px;">
+        <button class="close-btn">&times;</button>
+        <div class="invitation-header">
+          <h1>Galeri</h1>
+          <p class="subtitle">Momen Pre-Wedding Kami</p>
+        </div>
+        <div class="invitation-body">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div style="background: #ddd; height: 150px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">Foto 1</div>
+            <div style="background: #ddd; height: 150px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">Foto 2</div>
+            <div style="background: #ddd; height: 150px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">Foto 3</div>
+            <div style="background: #ddd; height: 150px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">Foto 4</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Kisah Pertemuan Modal -->
+    <div id="kisahModal" class="modal hidden">
+      <div class="modal-content">
+        <button class="close-btn">&times;</button>
+        <div class="invitation-header">
+          <h1>Kisah Cinta</h1>
+          <p class="subtitle">Bagaimana Kami Bertemu</p>
+        </div>
+        <div class="invitation-body" style="text-align: justify; line-height: 1.6;">
+          <p><strong>Awal Mula (2020)</strong><br>Kami pertama kali bertemu di sebuah acara komunitas. Berawal dari obrolan singkat tentang hobi yang sama, kami mulai sering bertukar pesan.</p>
+          <p><strong>Berkomitmen (2022)</strong><br>Setelah dua tahun saling mengenal dan mendukung satu sama lain, kami memutuskan untuk menjalin hubungan yang lebih serius.</p>
+          <p><strong>Hari Ini</strong><br>Dan kini, kami melangkah ke jenjang pernikahan dan berharap Anda menjadi saksi kebahagiaan kami.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Donasi Modal -->
+    <div id="donasiModal" class="modal hidden">
+      <div class="modal-content">
+        <button class="close-btn">&times;</button>
+        <div class="invitation-header">
+          <h1>Tanda Kasih</h1>
+          <p class="subtitle">Bagi yang ingin memberikan hadiah</p>
+        </div>
+        <div class="invitation-body" style="text-align: center;">
+          <p>Doa restu Anda merupakan karunia yang sangat berarti bagi kami.<br>Namun, jika Anda hendak memberikan tanda kasih, Anda dapat melalui:</p>
+          <div style="margin: 20px 0; padding: 20px; border: 1px dashed #c4a165; border-radius: 8px;">
+            <h3 style="margin-top:0;">BCA</h3>
+            <p style="font-size: 1.2em; letter-spacing: 2px;"><strong>1234 5678 90</strong></p>
+            <p>a.n. Romeo / Juliet</p>
+          </div>
+          <div style="background: #ddd; width: 150px; height: 150px; margin: 0 auto; display: flex; align-items: center; justify-content: center; border-radius: 8px;">
+            <p style="color: #666;">[QRIS]</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="./main.js?v=3"></script>
   </body>
 </html>

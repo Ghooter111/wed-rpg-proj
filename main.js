@@ -3,8 +3,21 @@ const ctx = canvas.getContext('2d');
 
 // UI Elements
 const interactionHint = document.getElementById('interactionHint');
-const invitationModal = document.getElementById('invitationModal');
-const btnCloseModal = document.getElementById('btnCloseModal');
+
+// Modals
+const modals = {
+    invitation: document.getElementById('invitationModal'),
+    alamat: document.getElementById('alamatModal'),
+    galeri: document.getElementById('galeriModal'),
+    kisah: document.getElementById('kisahModal'),
+    donasi: document.getElementById('donasiModal')
+};
+
+document.querySelectorAll('.close-btn').forEach(btn => {
+    btn.addEventListener('click', closeModal);
+});
+
+let activeModalId = null;
 
 // Resize canvas to fill window
 function resizeCanvas() {
@@ -37,9 +50,14 @@ const player = {
     staggerFrames: 10 
 };
 
-const interactionZone = {
-    x: 0, y: 0, width: 100, height: 100
-};
+const interactionZones = [
+    { id: 'invitation', x: 160, y: 40, w: 250, h: 120, label: 'Undangan' }, // Altar Top
+    { id: 'galeri', x: 70, y: 280, w: 120, h: 120, label: 'Galeri Pre-Wed' }, // Gazebo
+    { id: 'kisah', x: 380, y: 280, w: 120, h: 120, label: 'Kisah Pertemuan' }, // Right side symmetrical
+    { id: 'alamat', x: 70, y: 580, w: 100, h: 120, label: 'Alamat Acara' }, // Stalls Left
+    { id: 'donasi', x: 400, y: 580, w: 100, h: 120, label: 'Tanda Kasih / Donasi' } // Stalls Right
+];
+let activeZone = null;
 
 // --- BACKGROUND MUSIC (PLAYLIST & CONTROLS) ---
 let audioCtx;
@@ -155,10 +173,7 @@ function assetLoaded() {
         player.x = worldWidth / 2 - player.width / 2;
         player.y = worldHeight - 150; 
         
-        interactionZone.x = worldWidth / 2 - 100;
-        interactionZone.y = 50; 
-        interactionZone.width = 200;
-        interactionZone.height = 150;
+
     }
 }
 
@@ -209,29 +224,6 @@ const walkRight = new Image(); walkRight.onload = assetLoaded; walkRight.src = '
 // --- CAMERA ---
 const camera = { x: 0, y: 0 };
 
-// --- COLLISION BOUNDARIES ---
-const collisions = [
-    { x: 210, y: 570, w: 150, h: 140 }, // Center Big Tree
-    { x: 0, y: 560, w: 120, h: 150 },   // Left Tree Group
-    { x: 450, y: 560, w: 120, h: 150 }, // Right Tree Group
-    { x: 230, y: 760, w: 110, h: 90 },  // Fountain
-    { x: 160, y: 50, w: 250, h: 110 },  // Altar Top
-    { x: 70, y: 620, w: 100, h: 110 },  // Stalls Left
-    { x: 400, y: 620, w: 100, h: 110 }, // Stalls Right
-    { x: 70, y: 310, w: 120, h: 110 }   // Gazebo
-];
-
-function checkCollision(nx, ny) {
-    // Player feet collision box
-    const pBox = { x: nx + 5, y: ny + 20, w: player.width - 10, h: player.height - 20 };
-    for (let c of collisions) {
-        if (pBox.x < c.x + c.w && pBox.x + pBox.w > c.x &&
-            pBox.y < c.y + c.h && pBox.y + pBox.h > c.y) {
-            return true;
-        }
-    }
-    return false;
-}
 
 
 
@@ -281,9 +273,9 @@ setupMobileBtn(btnDown, 's');
 setupMobileBtn(btnLeft, 'a');
 setupMobileBtn(btnRight, 'd');
 
-btnAction.addEventListener('touchstart', (e) => { e.preventDefault(); btnAction.classList.add('active'); if (isNearInteractionZone() && !gameState.isModalOpen) openModal(); });
+btnAction.addEventListener('touchstart', (e) => { e.preventDefault(); btnAction.classList.add('active'); let zone = isNearInteractionZone(); if (zone && !gameState.isModalOpen) openModal(zone.id); });
 btnAction.addEventListener('touchend', (e) => { e.preventDefault(); btnAction.classList.remove('active'); });
-btnAction.addEventListener('mousedown', () => { btnAction.classList.add('active'); if (isNearInteractionZone() && !gameState.isModalOpen) openModal(); });
+btnAction.addEventListener('mousedown', () => { btnAction.classList.add('active'); let zone = isNearInteractionZone(); if (zone && !gameState.isModalOpen) openModal(zone.id); });
 btnAction.addEventListener('mouseup', () => btnAction.classList.remove('active'));
 
 // --- LOGIC ---
@@ -423,10 +415,15 @@ function checkCollision(newX, newY, width, height) {
 }
 
 function isNearInteractionZone() {
-    return player.x < interactionZone.x + interactionZone.width &&
-           player.x + player.width > interactionZone.x &&
-           player.y < interactionZone.y + interactionZone.height &&
-           player.y + player.height > interactionZone.y;
+    for (let zone of interactionZones) {
+        if (player.x < zone.x + zone.w &&
+            player.x + player.width > zone.x &&
+            player.y < zone.y + zone.h &&
+            player.y + player.height > zone.y) {
+            return zone;
+        }
+    }
+    return null;
 }
 
 function update() {
@@ -476,7 +473,9 @@ function update() {
     camera.x = Math.floor(Math.max(0, Math.min(player.x - canvas.width / 2, worldWidth - canvas.width)));
     camera.y = Math.floor(Math.max(0, Math.min(player.y - canvas.height / 2, worldHeight - canvas.height)));
 
-    if (isNearInteractionZone()) {
+    activeZone = isNearInteractionZone();
+    if (activeZone) {
+        interactionHint.innerText = "Tekan 'E' untuk buka " + activeZone.label;
         interactionHint.classList.remove('hidden');
     } else {
         interactionHint.classList.add('hidden');
