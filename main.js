@@ -570,16 +570,31 @@ function render() {
         }
         
         // Add Foreground Objects (Trees, Fountains)
-        // Extracting some overlay objects from objects.png to draw OVER characters.
-        // Example: The fountain bottom so characters can walk behind the water.
-        // Approx coordinates in objectsImg: Altar (0,0, 600, 400), Big Tree (700, 300, 300, 400)
-        // We will just add a big tree at the bottom left for depth testing
-        renderables.push({ 
-            type: 'object', 
-            yBase: 700 + 150, 
-            sx: 0, sy: 700, sw: 300, sh: 400, 
-            dx: 50, dy: 700, dw: 150, dh: 200 
-        });
+        // Extracting overlays directly from the background image to draw over characters.
+        const foregroundRegions = [
+            // Center Big Tree (above fountain)
+            { sx: 215, sy: 570, sw: 150, sh: 140, yBase: 720 }, 
+            // Left Tree Group
+            { sx: 0, sy: 550, sw: 130, sh: 180, yBase: 730 },
+            // Right Tree Group
+            { sx: 430, sy: 550, sw: 130, sh: 180, yBase: 730 },
+            // Gazebo Top
+            { sx: 80, sy: 310, sw: 100, sh: 100, yBase: 400 },
+            // Altar Top
+            { sx: 150, sy: 40, sw: 280, sh: 130, yBase: 160 },
+            // Left Upper Trees
+            { sx: 0, sy: 0, sw: 140, sh: 250, yBase: 250 },
+            // Right Upper Trees
+            { sx: 450, sy: 0, sw: 130, sh: 250, yBase: 250 },
+            // Right Lower Trees
+            { sx: 450, sy: 800, sw: 130, sh: 200, yBase: 950 },
+            // Left Lower Trees
+            { sx: 0, sy: 800, sw: 120, sh: 200, yBase: 950 }
+        ];
+
+        for (let fg of foregroundRegions) {
+            renderables.push({ type: 'fg_overlay', ref: fg, yBase: fg.yBase });
+        }
 
         // Sort by Y-coordinate
         renderables.sort((a, b) => a.yBase - b.yBase);
@@ -600,9 +615,10 @@ function render() {
                 ctx.fill();
 
                 ctx.drawImage(npcsImg, npc.sx, npc.sy, npc.sw, npc.sh, drawX, drawY, npc.drawWidth, npc.drawHeight);
-            } else if (item.type === 'object') {
-                // If we want to draw foreground overlapping objects, uncomment below
-                // ctx.drawImage(objectsImg, item.sx, item.sy, item.sw, item.sh, item.dx - camera.x, item.dy - camera.y, item.dw, item.dh);
+            } else if (item.type === 'fg_overlay') {
+                let fg = item.ref;
+                // Draw the specific region from the background image on top
+                ctx.drawImage(bgImage, fg.sx, fg.sy, fg.sw, fg.sh, fg.sx - camera.x, fg.sy - camera.y, fg.sw, fg.sh);
             }
         }
         
