@@ -173,17 +173,17 @@ function spawnSplash() {
     });
 }
 
-const bgImage = new Image(); bgImage.src = './assets/background.jpg'; bgImage.onload = assetLoaded;
+const bgImage = new Image(); bgImage.onload = assetLoaded; bgImage.src = './assets/background.jpg';
 
-const charUp = new Image(); charUp.src = './assets/char_left.png'; charUp.onload = assetLoaded; // ATAS (Gambar 3)
-const charDown = new Image(); charDown.src = './assets/char_down.png'; charDown.onload = assetLoaded; // BAWAH (Gambar 2)
-const charLeft = new Image(); charLeft.src = './assets/char_up.png'; charLeft.onload = assetLoaded; // KIRI (Gambar 1)
-const charRight = new Image(); charRight.src = './assets/char_right.png'; charRight.onload = assetLoaded; // KANAN (Gambar 4)
+const charUp = new Image(); charUp.onload = assetLoaded; charUp.src = './assets/char_left.png'; // ATAS (Gambar 3)
+const charDown = new Image(); charDown.onload = assetLoaded; charDown.src = './assets/char_down.png'; // BAWAH (Gambar 2)
+const charLeft = new Image(); charLeft.onload = assetLoaded; charLeft.src = './assets/char_up.png'; // KIRI (Gambar 1)
+const charRight = new Image(); charRight.onload = assetLoaded; charRight.src = './assets/char_right.png'; // KANAN (Gambar 4)
 
-const walkUp = new Image(); walkUp.src = './assets/walk_up.png'; walkUp.onload = assetLoaded; // JALAN ATAS (Gambar 5)
-const walkDown = new Image(); walkDown.src = './assets/walk_down.png'; walkDown.onload = assetLoaded; // JALAN BAWAH (Gambar 6)
-const walkLeft = new Image(); walkLeft.src = './assets/walk_right.png'; walkLeft.onload = assetLoaded; // JALAN KIRI (Gambar 8)
-const walkRight = new Image(); walkRight.src = './assets/walk_left.png'; walkRight.onload = assetLoaded; // JALAN KANAN (Gambar 7)
+const walkUp = new Image(); walkUp.onload = assetLoaded; walkUp.src = './assets/walk_up.png'; // JALAN ATAS (Gambar 5)
+const walkDown = new Image(); walkDown.onload = assetLoaded; walkDown.src = './assets/walk_down.png'; // JALAN BAWAH (Gambar 6)
+const walkLeft = new Image(); walkLeft.onload = assetLoaded; walkLeft.src = './assets/walk_right.png'; // JALAN KIRI (Gambar 8)
+const walkRight = new Image(); walkRight.onload = assetLoaded; walkRight.src = './assets/walk_left.png'; // JALAN KANAN (Gambar 7)
 
 
 // --- CAMERA ---
