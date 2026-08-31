@@ -87,11 +87,7 @@ const npcDialogues = [
     "Makanannya enak-enak lho!"
 ];
 
-npcs.forEach((npc, index) => {
-    npc.name = npcNames[index % npcNames.length];
-    npc.dialogue = npcDialogues[index % npcDialogues.length];
-});
-
+// NPC Dialogues array setup moved to the bottom
 const interactionZones = [
     { id: 'invitation', x: 160, y: 40, w: 250, h: 120, label: 'Undangan' }, // Altar Top
     { id: 'galeri', x: 140, y: 620, w: 90, h: 100, label: 'Galeri Pre-Wed' }, // Orange stall
@@ -419,6 +415,12 @@ window.addEventListener('keydown', (e) => {
 
     if (e.key === ' ' || e.key.toLowerCase() === 'e') {
         handleAction();
+    }
+});
+
+window.addEventListener('contextmenu', (e) => {
+    if (window.location.search.includes('edit')) {
+        e.preventDefault();
     }
 });
 
@@ -1161,4 +1163,12 @@ setTimeout(() => {
         instructions.classList.add('fade-out');
     }
 }, 2000);
+
+// Setup NPC Dialogues content after npcs is initialized
+if (typeof npcs !== 'undefined') {
+    npcs.forEach((npc, index) => {
+        npc.name = npcNames[index % npcNames.length];
+        npc.dialogue = npcDialogues[index % npcDialogues.length];
+    });
+}
 
