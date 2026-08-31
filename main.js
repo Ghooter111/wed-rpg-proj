@@ -15,6 +15,23 @@ const modals = {
 
 let activeModalId = null;
 
+// Quests and Dialogue
+let questItems = [
+    { x: 380, y: 320, collected: false },
+    { x: 750, y: 800, collected: false },
+    { x: 220, y: 780, collected: false }
+];
+let collectedQuests = 0;
+
+let isDialogueActive = false;
+let currentDialogue = null;
+const dialogBox = document.getElementById('dialogBox');
+const dialogName = document.getElementById('dialogName');
+const dialogText = document.getElementById('dialogText');
+const questTracker = document.getElementById('questTracker');
+const questText = document.getElementById('questText');
+modals.quest = document.getElementById('questModal');
+
 // Attach close event to all close buttons
 document.querySelectorAll('.close-btn').forEach(btn => {
     btn.addEventListener('click', closeModal);
@@ -58,6 +75,22 @@ const player = {
     walkFrame: 0,
     staggerFrames: 10 
 };
+
+// Setup NPC Dialogues
+const npcNames = ["Budi", "Siti", "Andi", "Tini", "Agus", "Dewi"];
+const npcDialogues = [
+    "Wah, tamannya indah sekali ya!",
+    "Aku tidak sabar melihat mereka di pelaminan.",
+    "Bunga-bunga di sini harum sekali.",
+    "Semoga mereka bahagia selamanya.",
+    "Eh, kamu sudah lihat foto pre-wedding mereka?",
+    "Makanannya enak-enak lho!"
+];
+
+npcs.forEach((npc, index) => {
+    npc.name = npcNames[index % npcNames.length];
+    npc.dialogue = npcDialogues[index % npcDialogues.length];
+});
 
 const interactionZones = [
     { id: 'invitation', x: 160, y: 40, w: 250, h: 120, label: 'Undangan' }, // Altar Top
@@ -382,8 +415,8 @@ window.addEventListener('keydown', (e) => {
     if (e.key.toLowerCase() === 's') keys.s = true;
     if (e.key.toLowerCase() === 'd') keys.d = true;
 
-    if ((e.key === ' ' || e.key.toLowerCase() === 'e') && isNearInteractionZone() && !gameState.isModalOpen) {
-        openModal();
+    if (e.key === ' ' || e.key.toLowerCase() === 'e') {
+        handleAction();
     }
 });
 
@@ -471,9 +504,86 @@ if (joystickZone && joystickStick) {
     }
 }
 
-btnAction.addEventListener('touchstart', (e) => { e.preventDefault(); btnAction.classList.add('active'); let zone = isNearInteractionZone(); if (zone && !gameState.isModalOpen) openModal(zone.id); });
+function handleAction() {
+    // If dialogue is active, advance or close it
+    if (isDialogueActive) {
+        dialogBox.classList.add('hidden');
+        isDialogueActive = false;
+        setTimeout(() => { currentDialogue = null; }, 300);
+        return;
+    }
+
+    if (gameState.isModalOpen) return;
+
+    // Check interaction zones
+    let zone = isNearInteractionZone();
+    if (zone) {
+        openModal(zone.id);
+        return;
+    }
+
+    // Check NPCs
+    const px = player.x + player.width / 2;
+    const py = player.y + player.height / 2;
+    
+    for (const npc of npcs) {
+        if (!npc.dialogue) continue;
+        const nx = npc.x + 16;
+        const ny = npc.y + 16;
+        const dist = Math.hypot(px - nx, py - ny);
+        if (dist < 50) {
+            currentDialogue = npc;
+            dialogName.innerText = npc.name;
+            dialogText.innerText = npc.dialogue;
+            dialogBox.classList.remove('hidden');
+            isDialogueActive = true;
+            
+            // Turn NPC to face player
+            const dx = px - nx;
+            const dy = py - ny;
+            if (Math.abs(dx) > Math.abs(dy)) {
+                npc.facing = dx > 0 ? 'right' : 'left';
+            } else {
+                npc.facing = dy > 0 ? 'down' : 'up';
+            }
+            return;
+        }
+    }
+
+    // Check Quest Items
+    for (const item of questItems) {
+        if (item.collected) continue;
+        const dist = Math.hypot(px - item.x, py - item.y);
+        if (dist < 40) {
+            item.collected = true;
+            collectedQuests++;
+            questText.innerText = `Bunga Mawar: ${collectedQuests}/3`;
+            questTracker.classList.add('pop');
+            setTimeout(() => questTracker.classList.remove('pop'), 300);
+            
+            // Spawn some particles
+            for(let i=0; i<10; i++) {
+                splashes.push({
+                    x: item.x,
+                    y: item.y,
+                    radius: Math.random() * 3 + 1,
+                    opacity: 1,
+                    speedY: -Math.random() * 2 - 1,
+                    speedX: (Math.random() - 0.5) * 2
+                });
+            }
+
+            if (collectedQuests >= 3) {
+                setTimeout(() => openModal('quest'), 500);
+            }
+            return;
+        }
+    }
+}
+
+btnAction.addEventListener('touchstart', (e) => { e.preventDefault(); btnAction.classList.add('active'); handleAction(); });
 btnAction.addEventListener('touchend', (e) => { e.preventDefault(); btnAction.classList.remove('active'); });
-btnAction.addEventListener('mousedown', () => { btnAction.classList.add('active'); let zone = isNearInteractionZone(); if (zone && !gameState.isModalOpen) openModal(zone.id); });
+btnAction.addEventListener('mousedown', () => { btnAction.classList.add('active'); handleAction(); });
 btnAction.addEventListener('mouseup', () => btnAction.classList.remove('active'));
 
 // --- LOGIC ---
@@ -671,7 +781,7 @@ function updateNpcs() {
 }
 
 function update() {
-    if (gameState.isModalOpen || !gameState.assetsLoaded) return;
+    if (gameState.isModalOpen || !gameState.assetsLoaded || isDialogueActive) return;
     
     updateNpcs();
 
@@ -918,6 +1028,76 @@ function render() {
         }
         
         drawFloatingSigns();
+
+        // Draw Quest Items (Glowing Roses)
+        const time = Date.now() * 0.003;
+        const floatY = Math.sin(time * 2) * 3;
+        for (const item of questItems) {
+            if (item.collected) continue;
+            const drawX = (item.x - camera.x) | 0;
+            const drawY = (item.y - camera.y + floatY) | 0;
+            if (drawX > -20 && drawX < canvas.width + 20 && drawY > -20 && drawY < canvas.height + 20) {
+                // Glow
+                const pulse = (Math.sin(time * 3) + 1) / 2; // 0 to 1
+                ctx.fillStyle = `rgba(255, 215, 0, ${0.3 + pulse * 0.3})`;
+                ctx.beginPath();
+                ctx.arc(drawX, drawY, 15 + pulse * 5, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Rose placeholder (Red circle)
+                ctx.fillStyle = '#e84393';
+                ctx.beginPath();
+                ctx.arc(drawX, drawY, 6, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // Day/Night Cycle Overlay
+        const hours = new Date().getHours();
+        let darkness = 0;
+        if (hours >= 18 || hours < 6) {
+            // Night time
+            darkness = 0.55; // 55% opacity dark blue
+        } else if (hours === 17 || hours === 6) {
+            // Twilight/Dawn
+            darkness = 0.3;
+        }
+
+        if (darkness > 0) {
+            // Dark overlay
+            ctx.fillStyle = `rgba(10, 10, 40, ${darkness})`;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Fairy Lights overlay for night time
+            // Draw a few random glowing dots that are static in the world
+            ctx.fillStyle = 'rgba(255, 230, 150, 0.8)';
+            const lightPositions = [
+                {x: 200, y: 150}, {x: 250, y: 140}, {x: 300, y: 160},
+                {x: 400, y: 350}, {x: 450, y: 330}, {x: 500, y: 360},
+                {x: 700, y: 250}, {x: 750, y: 220}, {x: 800, y: 270},
+                {x: 100, y: 600}, {x: 150, y: 620}, {x: 80, y: 650}
+            ];
+            
+            for (let light of lightPositions) {
+                const lx = (light.x - camera.x) | 0;
+                const ly = (light.y - camera.y) | 0;
+                if (lx > -10 && lx < canvas.width + 10 && ly > -10 && ly < canvas.height + 10) {
+                    const twinkle = (Math.sin(time * 5 + light.x) + 1) / 2; // 0 to 1
+                    
+                    // Core
+                    ctx.fillStyle = `rgba(255, 255, 255, ${0.5 + twinkle * 0.5})`;
+                    ctx.beginPath();
+                    ctx.arc(lx, ly, 2, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Glow
+                    ctx.fillStyle = `rgba(255, 200, 50, ${0.2 + twinkle * 0.2})`;
+                    ctx.beginPath();
+                    ctx.arc(lx, ly, 8, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+        }
 
     } else {
         ctx.fillStyle = 'white';

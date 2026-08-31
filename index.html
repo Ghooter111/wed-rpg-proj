@@ -63,9 +63,22 @@
       </div>
     </div>
 
+    <!-- Quest Tracker UI -->
+    <div id="questTracker" class="quest-tracker">
+      <span class="quest-icon">🌹</span>
+      <span id="questText">Bunga Mawar: 0/3</span>
+    </div>
+
     <!-- Instructions Overlay -->
     <div id="instructions">
-      <p>Gunakan <b>WASD</b> atau <b>Panah</b> untuk bergerak.<br>Dekati bangunan dan tekan <b>Spasi</b> atau klik <b>E</b>.</p>
+      <p>Gunakan <b>WASD</b> atau <b>Panah</b> untuk bergerak.<br>Dekati bangunan/NPC dan klik <b>E</b>.</p>
+    </div>
+
+    <!-- NPC Dialogue Box -->
+    <div id="dialogBox" class="dialog-box hidden">
+      <div id="dialogName" class="dialog-name">Nama NPC</div>
+      <div id="dialogText" class="dialog-text">Halo! Selamat datang di acara ini.</div>
+      <div class="dialog-hint">Tap untuk melanjutkan ▾</div>
     </div>
 
     <!-- Interaction Hint Overlay (Shows when near building) -->
@@ -176,12 +189,29 @@
         <div class="invitation-body" style="text-align: center;">
           <p>Doa restu Anda merupakan karunia yang sangat berarti bagi kami.<br>Namun, jika Anda hendak memberikan tanda kasih, Anda dapat melalui:</p>
           <div style="margin: 20px 0; padding: 20px; border: 1px dashed #c4a165; border-radius: 8px;">
-            <h3 style="margin-top:0;">BCA</h3>
-            <p style="font-size: 1.2em; letter-spacing: 2px;"><strong>1234 5678 90</strong></p>
-            <p>a.n. Romeo / Juliet</p>
+            <p><strong>BCA</strong><br>1234567890<br>a.n Romeo</p>
+            <p style="margin-top: 10px;"><strong>Mandiri</strong><br>0987654321<br>a.n Juliet</p>
           </div>
           <div style="background: #ddd; width: 150px; height: 150px; margin: 0 auto; display: flex; align-items: center; justify-content: center; border-radius: 8px;">
             <p style="color: #666;">[QRIS]</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Secret Quest Modal -->
+    <div id="questModal" class="modal hidden" style="z-index: 105;">
+      <div class="modal-content">
+        <button class="close-btn">&times;</button>
+        <div class="invitation-header">
+          <h1>Misi Selesai!</h1>
+          <p class="subtitle">Terima Kasih Telah Menjelajah</p>
+        </div>
+        <div class="invitation-body" style="text-align: center;">
+          <p>Wah, kamu berhasil menemukan ketiga bunga mawar yang tersembunyi di taman ini!</p>
+          <p>Sebagai hadiah, ini ada pesan rahasia dari kami:</p>
+          <div style="background: var(--color-gold-light); padding: 15px; border-radius: 8px; margin-top: 15px; font-style: italic; color: var(--color-dark);">
+            "Terima kasih sudah menjadi bagian dari cerita kami. Doa dan kehadiranmu melengkapi kebahagiaan kami berdua."<br>— Romeo & Juliet
           </div>
         </div>
       </div>
