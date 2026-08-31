@@ -1111,11 +1111,11 @@ function render() {
                 const pulse = (Math.sin(time * 3) + 1) / 2; // 0 to 1
                 ctx.fillStyle = `rgba(255, 215, 0, ${0.3 + pulse * 0.3})`;
                 ctx.beginPath();
-                ctx.arc(drawX, drawY, 20 + pulse * 5, 0, Math.PI * 2);
+                ctx.arc(drawX, drawY, 12 + pulse * 3, 0, Math.PI * 2);
                 ctx.fill();
                 
                 // Draw Rose Image
-                const size = 30;
+                const size = 18;
                 ctx.drawImage(roseImg, drawX - size/2, drawY - size/2, size, size);
             }
         }
