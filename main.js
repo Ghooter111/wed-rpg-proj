@@ -16,11 +16,7 @@ const modals = {
 let activeModalId = null;
 
 // Quests and Dialogue
-let questItems = [
-    { x: 380, y: 320, collected: false },
-    { x: 750, y: 800, collected: false },
-    { x: 220, y: 780, collected: false }
-];
+let questItems = [];
 let collectedQuests = 0;
 
 let isDialogueActive = false;
@@ -57,7 +53,7 @@ resizeCanvas();
 const gameState = {
     isModalOpen: false,
     assetsLoaded: false,
-    assetsToLoad: 52, // bg (3) + char (4) + walk (4) + signs (1) + npcs (40)
+    assetsToLoad: 53, // bg(3) + char(4) + walk(4) + signs(1) + npcs(40) + rose(1)
     assetsLoadedCount: 0
 };
 
@@ -208,10 +204,19 @@ function assetLoaded() {
         
         worldWidth = bgImage.width;
         worldHeight = bgImage.height;
+
+        // Generate random quest items
+        if (questItems.length === 0) {
+            for (let i = 0; i < 3; i++) {
+                questItems.push({
+                    x: 100 + Math.random() * (worldWidth - 200),
+                    y: 100 + Math.random() * (worldHeight - 200),
+                    collected: false
+                });
+            }
+        }
         player.x = worldWidth / 2 - player.width / 2;
         player.y = worldHeight - 150; 
-        
-
     }
 }
 
@@ -249,6 +254,7 @@ function spawnSplash() {
 const bgImage = new Image(); bgImage.onload = assetLoaded; bgImage.src = './assets/background.jpg';
 const bgImageAfternoon = new Image(); bgImageAfternoon.onload = assetLoaded; bgImageAfternoon.src = './assets/map_evening.jpg';
 const bgImageNight = new Image(); bgImageNight.onload = assetLoaded; bgImageNight.src = './assets/map_night.jpg';
+const roseImg = new Image(); roseImg.onload = assetLoaded; roseImg.src = './assets/rose.png';
 
 const charUp = new Image(); charUp.onload = assetLoaded; charUp.src = './assets/char_left.png'; // ATAS (Gambar 3)
 const charDown = new Image(); charDown.onload = assetLoaded; charDown.src = './assets/char_down.png'; // BAWAH (Gambar 2)
@@ -1049,14 +1055,12 @@ function render() {
                 const pulse = (Math.sin(time * 3) + 1) / 2; // 0 to 1
                 ctx.fillStyle = `rgba(255, 215, 0, ${0.3 + pulse * 0.3})`;
                 ctx.beginPath();
-                ctx.arc(drawX, drawY, 15 + pulse * 5, 0, Math.PI * 2);
+                ctx.arc(drawX, drawY, 20 + pulse * 5, 0, Math.PI * 2);
                 ctx.fill();
                 
-                // Rose placeholder (Red circle)
-                ctx.fillStyle = '#e84393';
-                ctx.beginPath();
-                ctx.arc(drawX, drawY, 6, 0, Math.PI * 2);
-                ctx.fill();
+                // Draw Rose Image
+                const size = 30;
+                ctx.drawImage(roseImg, drawX - size/2, drawY - size/2, size, size);
             }
         }
     } else {
