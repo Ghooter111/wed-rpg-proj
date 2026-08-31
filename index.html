@@ -53,11 +53,11 @@
 
     <!-- UI Overlay for Mobile Controls -->
     <div id="uiOverlay" class="ui-overlay hidden-on-desktop">
-      <div class="d-pad">
-        <button id="btnUp" class="d-pad-btn up">▲</button>
-        <button id="btnLeft" class="d-pad-btn left">◀</button>
-        <button id="btnRight" class="d-pad-btn right">▶</button>
-        <button id="btnDown" class="d-pad-btn down">▼</button>
+      <div id="joystickZone" class="joystick-zone">
+        <div id="joystickBase" class="joystick-base">
+          <div id="joystickStick" class="joystick-stick"></div>
+        </div>
+      </div>
       </div>
       <div class="action-buttons">
         <button id="btnAction" class="action-btn">E</button>
@@ -189,6 +189,11 @@
     </div>
 
     <!-- Bottom Navigation Menu -->
+    <button id="btnToggleMenu" class="toggle-menu-btn" title="Toggle Menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6 9l6 6 6-6"/>
+      </svg>
+    </button>
     <nav id="bottomNav" class="bottom-nav">
       <button class="nav-item active" data-target="home">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>

@@ -269,7 +269,7 @@ body, html {
 /* Mobile UI Overlay (D-Pad & Action Button) */
 .ui-overlay {
     position: absolute;
-    bottom: 40px;
+    bottom: 90px;
     left: 0;
     width: 100%;
     padding: 0 30px;
@@ -278,6 +278,11 @@ body, html {
     align-items: flex-end;
     pointer-events: none;
     z-index: 20;
+    transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+body.menu-hidden .ui-overlay {
+    bottom: 30px;
 }
 
 @media (min-width: 768px) {
@@ -286,41 +291,45 @@ body, html {
     }
 }
 
-.d-pad {
+.joystick-zone {
     position: relative;
-    width: 120px;
-    height: 120px;
+    width: 130px;
+    height: 130px;
     pointer-events: auto;
-}
-
-.d-pad-btn {
-    position: absolute;
-    width: 40px;
-    height: 40px;
-    background: var(--color-bg-glass);
-    border: 1px solid rgba(255, 255, 255, 0.6);
-    border-radius: 10px;
-    color: var(--color-dark);
-    font-size: 18px;
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+.joystick-base {
+    width: 120px;
+    height: 120px;
+    background: var(--color-bg-glass);
+    border: 2px solid rgba(255, 255, 255, 0.6);
+    border-radius: 50%;
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
-    cursor: pointer;
-    transition: background 0.1s, transform 0.1s;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    position: relative;
 }
 
-.d-pad-btn:active, .d-pad-btn.active {
-    background: rgba(255, 255, 255, 0.9);
-    transform: scale(0.95);
+.joystick-stick {
+    width: 50px;
+    height: 50px;
+    background: var(--color-gold);
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 4px 10px rgba(196, 161, 101, 0.5);
+    transition: background 0.1s;
+    pointer-events: none;
 }
 
-.d-pad-btn.up { top: 0; left: 40px; }
-.d-pad-btn.left { top: 40px; left: 0; }
-.d-pad-btn.right { top: 40px; left: 80px; }
-.d-pad-btn.down { top: 80px; left: 40px; }
+.joystick-zone.active .joystick-stick {
+    background: #b38f53;
+}
 
 .action-buttons {
     pointer-events: auto;
@@ -503,6 +512,43 @@ body, html {
 }
 
 /* Bottom Navigation Menu */
+.toggle-menu-btn {
+    position: absolute;
+    bottom: 100px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--color-bg-glass-dark);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.6);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--color-dark);
+    cursor: pointer;
+    z-index: 95;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+body.menu-hidden .toggle-menu-btn {
+    bottom: 20px;
+    transform: rotate(180deg);
+}
+
+.toggle-menu-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+@media (min-width: 768px) {
+    .toggle-menu-btn {
+        display: none !important;
+    }
+}
+
 .bottom-nav {
     position: absolute;
     bottom: 20px;
@@ -518,7 +564,13 @@ body, html {
     gap: 25px;
     box-shadow: 0 15px 35px rgba(0,0,0,0.1);
     z-index: 90;
-    transition: opacity 0.5s ease;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease;
+}
+
+body.menu-hidden .bottom-nav {
+    transform: translate(-50%, 150px);
+    opacity: 0;
+    pointer-events: none;
 }
 
 .nav-item {

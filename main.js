@@ -395,25 +395,81 @@ window.addEventListener('keyup', (e) => {
     if (e.key.toLowerCase() === 'd') keys.d = false;
 });
 
-// Mobile Controls
-const btnUp = document.getElementById('btnUp');
-const btnDown = document.getElementById('btnDown');
-const btnLeft = document.getElementById('btnLeft');
-const btnRight = document.getElementById('btnRight');
-const btnAction = document.getElementById('btnAction');
-
-function setupMobileBtn(btn, keyAssigned) {
-    btn.addEventListener('touchstart', (e) => { e.preventDefault(); keys[keyAssigned] = true; btn.classList.add('active'); });
-    btn.addEventListener('touchend', (e) => { e.preventDefault(); keys[keyAssigned] = false; btn.classList.remove('active'); });
-    btn.addEventListener('mousedown', () => { keys[keyAssigned] = true; btn.classList.add('active'); });
-    btn.addEventListener('mouseup', () => { keys[keyAssigned] = false; btn.classList.remove('active'); });
-    btn.addEventListener('mouseleave', () => { keys[keyAssigned] = false; btn.classList.remove('active'); });
+// Menu Toggle Logic
+const btnToggleMenu = document.getElementById('btnToggleMenu');
+if (btnToggleMenu) {
+    btnToggleMenu.addEventListener('click', () => {
+        document.body.classList.toggle('menu-hidden');
+    });
 }
 
-setupMobileBtn(btnUp, 'w');
-setupMobileBtn(btnDown, 's');
-setupMobileBtn(btnLeft, 'a');
-setupMobileBtn(btnRight, 'd');
+// Mobile Controls
+const btnAction = document.getElementById('btnAction');
+
+const joystickZone = document.getElementById('joystickZone');
+const joystickStick = document.getElementById('joystickStick');
+let joystickActive = false;
+let joystickCenter = { x: 0, y: 0 };
+let stickMaxRadius = 35; 
+
+if (joystickZone && joystickStick) {
+    joystickZone.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        joystickActive = true;
+        joystickZone.classList.add('active');
+        const rect = joystickZone.getBoundingClientRect();
+        joystickCenter = {
+            x: rect.left + rect.width / 2,
+            y: rect.top + rect.height / 2
+        };
+        handleJoystickMove(e.touches[0]);
+    }, { passive: false });
+
+    joystickZone.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        if (joystickActive) {
+            handleJoystickMove(e.touches[0]);
+        }
+    }, { passive: false });
+
+    const stopJoystick = (e) => {
+        if (e && e.cancelable) e.preventDefault();
+        joystickActive = false;
+        joystickZone.classList.remove('active');
+        joystickStick.style.transform = `translate(-50%, -50%)`;
+        keys.w = false;
+        keys.a = false;
+        keys.s = false;
+        keys.d = false;
+    };
+
+    joystickZone.addEventListener('touchend', stopJoystick);
+    joystickZone.addEventListener('touchcancel', stopJoystick);
+
+    function handleJoystickMove(touch) {
+        const dx = touch.clientX - joystickCenter.x;
+        const dy = touch.clientY - joystickCenter.y;
+        const distance = Math.min(Math.sqrt(dx*dx + dy*dy), stickMaxRadius);
+        const angle = Math.atan2(dy, dx);
+        
+        const moveX = Math.cos(angle) * distance;
+        const moveY = Math.sin(angle) * distance;
+        joystickStick.style.transform = `translate(calc(-50% + ${moveX}px), calc(-50% + ${moveY}px))`;
+        
+        keys.w = false;
+        keys.a = false;
+        keys.s = false;
+        keys.d = false;
+        
+        if (distance > 10) {
+            const deg = angle * (180 / Math.PI);
+            if (deg < -22.5 && deg > -157.5) keys.w = true;
+            if (deg > 22.5 && deg < 157.5) keys.s = true;
+            if (Math.abs(deg) > 112.5) keys.a = true;
+            if (Math.abs(deg) < 67.5) keys.d = true;
+        }
+    }
+}
 
 btnAction.addEventListener('touchstart', (e) => { e.preventDefault(); btnAction.classList.add('active'); let zone = isNearInteractionZone(); if (zone && !gameState.isModalOpen) openModal(zone.id); });
 btnAction.addEventListener('touchend', (e) => { e.preventDefault(); btnAction.classList.remove('active'); });
