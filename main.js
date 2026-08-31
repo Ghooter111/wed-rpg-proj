@@ -716,8 +716,8 @@ function update() {
     }
 
     // Update Camera (Math.floor to prevent subpixel rendering lag on mobile)
-    camera.x = Math.floor(Math.max(0, Math.min(player.x - canvas.width / 2, worldWidth - canvas.width)));
-    camera.y = Math.floor(Math.max(0, Math.min(player.y - canvas.height / 2, worldHeight - canvas.height)));
+    camera.x = Math.max(0, Math.min(player.x - canvas.width / 2, worldWidth - canvas.width)) | 0;
+    camera.y = Math.max(0, Math.min(player.y - canvas.height / 2, worldHeight - canvas.height)) | 0;
 
     activeZone = isNearInteractionZone();
     if (activeZone) {
@@ -752,14 +752,13 @@ function update() {
 
 // --- DRAWING ---
 function drawPlayer() {
-    const spriteYOffset = 4; // Offset to account for transparent space at the bottom of the sprite image
-    const drawX = Math.floor(player.x - camera.x - (player.drawWidth - player.width)/2);
-    const drawY = Math.floor(player.y - camera.y - (player.drawHeight - player.height) + spriteYOffset);
+    const spriteYOffset = 4;
+    const drawX = (player.x - camera.x - (player.drawWidth - player.width)/2) | 0;
+    const drawY = (player.y - camera.y - (player.drawHeight - player.height) + spriteYOffset) | 0;
 
+    // Fast Shadow
     ctx.fillStyle = 'rgba(0,0,0,0.3)';
-    ctx.beginPath();
-    ctx.ellipse(player.x - camera.x + player.width/2, player.y - camera.y + player.height, player.width/2, 4, 0, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.fillRect((player.x - camera.x + player.width*0.1) | 0, (player.y - camera.y + player.height - 2) | 0, (player.width*0.8) | 0, 4);
 
     let currentSprite;
     if (player.facing === 'up') currentSprite = (player.isWalking && player.walkFrame === 1) ? walkUp : charUp;
@@ -772,17 +771,6 @@ function drawPlayer() {
         0, 0, currentSprite.width, currentSprite.height,
         drawX, drawY, player.drawWidth, player.drawHeight
     );
-
-    // Debug Collisions
-    const forceDebug = false; // Selalu aktifkan box merah untuk sementara
-    if (forceDebug || window.location.search.includes('debug') || window.location.search.includes('edit')) {
-        ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
-        for (const box of collisions) {
-            ctx.fillRect(box.x - camera.x, box.y - camera.y, box.w, box.h);
-        }
-        ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
-        ctx.fillRect(player.x - camera.x, player.y - camera.y, player.width, player.height);
-    }
 }
 
 const signSettings = 
@@ -810,200 +798,6 @@ const signSettings =
 };
 
 let mouseX = 0, mouseY = 0;
-let draggingSignId = null;
-
-if (window.location.search.includes('edit=npc')) {
-    document.getElementById('editorOutput').style.display = 'block';
-    
-    // NPC EDITOR UI
-    const editorDiv = document.getElementById('npcEditorDiv');
-    if (editorDiv) {
-        editorDiv.style.display = 'flex';
-        
-        // Draggable logic
-        const handle = document.getElementById('npcEditorHandle');
-        let isDraggingEditor = false;
-        let dragOffsetX = 0, dragOffsetY = 0;
-        
-        handle.addEventListener('mousedown', (e) => {
-            isDraggingEditor = true;
-            const rect = editorDiv.getBoundingClientRect();
-            dragOffsetX = e.clientX - rect.left;
-            dragOffsetY = e.clientY - rect.top;
-        });
-        
-        window.addEventListener('mousemove', (e) => {
-            if (isDraggingEditor) {
-                editorDiv.style.left = (e.clientX - dragOffsetX) + 'px';
-                editorDiv.style.top = (e.clientY - dragOffsetY) + 'px';
-            }
-        });
-        
-        window.addEventListener('mouseup', () => {
-            isDraggingEditor = false;
-        });
-    }
-    
-    const npcListContainer = document.getElementById('npcListContainer');
-    
-    if (npcListContainer) {
-        for (let i = 0; i < 40; i++) {
-            const btn = document.createElement('button');
-            btn.innerText = `NPC ${i}`;
-            btn.style.display = 'block';
-            btn.style.width = '100%';
-            btn.style.marginBottom = '5px';
-            btn.style.padding = '3px';
-            btn.onclick = () => {
-                window.placingNpcSpriteId = i;
-                window.selectedNpcId = null;
-            };
-            npcListContainer.appendChild(btn);
-        }
-    }
-
-    const saveBtn = document.getElementById('btnCopyNpcConfig');
-    if (saveBtn) {
-        saveBtn.onclick = () => {
-            // Create a copy without runtime vars like isWalking
-            const cleanNpcs = npcs.map(n => ({
-                id: n.id,
-                spriteId: n.spriteId,
-                x: n.x,
-                y: n.y,
-                path: n.path,
-                pathIndex: 0,
-                facing: 'down',
-                walkFrame: 0,
-                walkTimer: 0,
-                isWalking: false,
-                waitTimer: 0
-            }));
-            const editorOutput = document.getElementById('editorOutput');
-            if(editorOutput) editorOutput.value = "npcs = " + JSON.stringify(cleanNpcs, null, 2) + ";";
-        };
-    }
-    
-    window.addEventListener('mousemove', (e) => {
-        mouseX = e.clientX;
-        mouseY = e.clientY;
-        if (draggingSignId) {
-            signSettings[draggingSignId].ox += e.movementX;
-            signSettings[draggingSignId].oy += e.movementY;
-        }
-    });
-    window.addEventListener('mousedown', (e) => {
-        if (e.target !== canvas) return; // Ignore clicks on UI
-
-        const worldX = mouseX + camera.x;
-        const worldY = mouseY + camera.y;
-
-        // Check if clicking existing NPC
-        let clickedNpc = null;
-        let clickedNpcIndex = -1;
-        for (let i = 0; i < npcs.length; i++) {
-            const npc = npcs[i];
-            const img = npcImages[npc.spriteId];
-            if (!img) continue;
-            const fw = img.width / 3;
-            const fh = img.height / 4;
-            if (worldX >= npc.x && worldX <= npc.x + fw &&
-                worldY >= npc.y && worldY <= npc.y + fh) {
-                clickedNpc = npc;
-                clickedNpcIndex = i;
-                break;
-            }
-        }
-
-        if (clickedNpc) {
-            if (e.button === 2) { // Right click to delete
-                npcs.splice(clickedNpcIndex, 1);
-                window.selectedNpcId = null;
-                const saveBtn = document.getElementById('btnCopyNpcConfig');
-                if (saveBtn) saveBtn.onclick(); // Update textarea
-            } else {
-                window.selectedNpcId = clickedNpc.id;
-                window.placingNpcSpriteId = null;
-            }
-            return;
-        }
-
-        // If placing a new NPC
-        if (window.placingNpcSpriteId !== null) {
-            npcs.push({
-                id: Date.now(),
-                spriteId: window.placingNpcSpriteId,
-                x: worldX - 16, // center it a bit
-                y: worldY - 16,
-                path: [{x: worldX - 16, y: worldY - 16}], // First waypoint is current pos
-                pathIndex: 0,
-                facing: 'down',
-                walkFrame: 0,
-                walkTimer: 0,
-                isWalking: false,
-                waitTimer: 0
-            });
-            window.placingNpcSpriteId = null; // Reset
-            return;
-        }
-
-        // If an NPC is selected, add waypoint
-        if (window.selectedNpcId !== null) {
-            const npc = npcs.find(n => n.id === window.selectedNpcId);
-            if (npc) {
-                npc.path.push({x: worldX - 16, y: worldY - 16});
-            }
-        }
-
-        // Existing Collision detection for signs (draggable)
-        interactionZones.forEach(zone => {
-            if (zone.id === 'invitation' || !signSettings[zone.id]) return;
-            const conf = signSettings[zone.id];
-            const signW = signsImg.width / 2;
-            const signH = signsImg.height / 2;
-            const drawW = conf.w;
-            const drawH = drawW * (signH / signW);
-            
-            const x = (zone.x + zone.w / 2) + conf.ox - camera.x;
-            const y = (zone.y) + conf.oy - camera.y; // approximate without float
-            
-            if (mouseX >= x - drawW/2 && mouseX <= x + drawW/2 &&
-                mouseY >= y - drawH/2 && mouseY <= y + drawH/2) {
-                draggingSignId = zone.id;
-            }
-        });
-    });
-    window.addEventListener('mouseup', () => {
-        if (draggingSignId) {
-            console.log(JSON.stringify(signSettings, null, 2));
-            const editorOutput = document.getElementById('editorOutput');
-            if(editorOutput) editorOutput.value = "const signSettings = \\n" + JSON.stringify(signSettings, null, 2) + ";";
-            draggingSignId = null;
-        }
-    });
-    window.addEventListener('wheel', (e) => {
-        interactionZones.forEach(zone => {
-            if (zone.id === 'invitation' || !signSettings[zone.id]) return;
-            const conf = signSettings[zone.id];
-            const signW = signsImg.width / 2;
-            const signH = signsImg.height / 2;
-            const drawW = conf.w;
-            const drawH = drawW * (signH / signW);
-            
-            const x = (zone.x + zone.w / 2) + conf.ox - camera.x;
-            const y = (zone.y) + conf.oy - camera.y;
-            
-            if (mouseX >= x - drawW/2 && mouseX <= x + drawW/2 &&
-                mouseY >= y - drawH/2 && mouseY <= y + drawH/2) {
-                conf.w += e.deltaY > 0 ? -2 : 2;
-                if (conf.w < 10) conf.w = 10;
-                const editorOutput = document.getElementById('editorOutput');
-                if(editorOutput) editorOutput.value = "const signSettings = \\n" + JSON.stringify(signSettings, null, 2) + ";";
-            }
-        });
-    });
-}
-
 function drawFloatingSigns() {
     const time = Date.now() * 0.003;
     const floatY = Math.sin(time) * 5;
@@ -1052,8 +846,8 @@ function drawNpcs() {
         const img = npcImages[npc.spriteId];
         if (!img) continue;
 
-        const frameW = Math.floor(img.width / 3);
-        const frameH = Math.floor(img.height / 4);
+        const frameW = (img.width / 3) | 0;
+        const frameH = (img.height / 4) | 0;
         
         let row = 0;
         if (npc.facing === 'down') row = 0;
@@ -1067,48 +861,21 @@ function drawNpcs() {
             col = walkSeq[npc.walkFrame % 4];
         }
 
-        const drawX = Math.floor(npc.x - camera.x);
-        const drawY = Math.floor(npc.y - camera.y);
+        const drawX = (npc.x - camera.x) | 0;
+        const drawY = (npc.y - camera.y) | 0;
         
         if (drawX > -frameW && drawX < canvas.width && drawY > -frameH && drawY < canvas.height) {
-            // Shadow
+            // Fast Shadow (using alpha rect to save ellipse path processing)
             ctx.fillStyle = 'rgba(0,0,0,0.3)';
-            ctx.beginPath();
-            ctx.ellipse(drawX + frameW/2, drawY + frameH - 4, frameW/3, 4, 0, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.fillRect(drawX + frameW/3, drawY + frameH - 4, frameW/2.5, 4);
 
             // Draw NPC (Crop 1 pixel from width/height to prevent ghosting/bleeding from next frame)
             ctx.imageSmoothingEnabled = false;
             ctx.drawImage(
                 img,
-                Math.floor(col * frameW), Math.floor(row * frameH), frameW - 1, frameH - 1,
+                (col * frameW) | 0, (row * frameH) | 0, frameW - 1, frameH - 1,
                 drawX, drawY, frameW - 1, frameH - 1
             );
-
-            // Editor Highlights & Paths
-            if (window.location.search.includes('edit')) {
-                // If selected in editor, handled later
-                if (window.selectedNpcId === npc.id) {
-                    ctx.strokeStyle = 'yellow';
-                    ctx.strokeRect(drawX, drawY, frameW, frameH);
-                }
-                
-                // Draw path lines
-                if (npc.path && npc.path.length > 0) {
-                    ctx.beginPath();
-                    ctx.moveTo(npc.path[0].x - camera.x + frameW/2, npc.path[0].y - camera.y + frameH/2);
-                    for(let i=1; i<npc.path.length; i++) {
-                        ctx.lineTo(npc.path[i].x - camera.x + frameW/2, npc.path[i].y - camera.y + frameH/2);
-                        ctx.fillStyle = 'red';
-                        ctx.fillRect(npc.path[i].x - camera.x + frameW/2 - 2, npc.path[i].y - camera.y + frameH/2 - 2, 4, 4);
-                    }
-                    if(npc.path.length > 1) {
-                        ctx.lineTo(npc.path[0].x - camera.x + frameW/2, npc.path[0].y - camera.y + frameH/2);
-                    }
-                    ctx.strokeStyle = 'rgba(255, 255, 0, 0.5)';
-                    ctx.stroke();
-                }
-            }
         }
     }
 }
@@ -1148,13 +915,6 @@ function render() {
             ctx.globalAlpha = 0.8;
             ctx.fillRect(-l.size/2, -l.size/2, l.size, l.size);
             ctx.restore();
-        }
-        
-        for (let s of splashes) {
-            ctx.fillStyle = `rgba(135, 206, 235, ${s.alpha})`;
-            ctx.beginPath();
-            ctx.arc(s.x - camera.x, s.y - camera.y, s.size, 0, Math.PI * 2);
-            ctx.fill();
         }
         
         drawFloatingSigns();
@@ -1259,90 +1019,4 @@ setTimeout(() => {
         instructions.classList.add('fade-out');
     }
 }, 2000);
-
-// --- COLLISION EDITOR ---
-let isEditing = false;
-let editBoxStart = null;
-
-if (window.location.search.includes('edit=collision')) {
-    document.getElementById('editorOutput').style.display = 'block';
-    
-    canvas.addEventListener('mousedown', (e) => {
-        const worldX = e.clientX + camera.x;
-        const worldY = e.clientY + camera.y;
-
-        if (e.button === 2) { // Right click to delete collision
-            for (let i = collisions.length - 1; i >= 0; i--) {
-                const box = collisions[i];
-                if (worldX >= box.x && worldX <= box.x + box.w &&
-                    worldY >= box.y && worldY <= box.y + box.h) {
-                    collisions.splice(i, 1);
-                    updateEditorOutput();
-                    break;
-                }
-            }
-            return;
-        }
-
-        isEditing = true;
-        editBoxStart = { x: worldX, y: worldY };
-    });
-
-    canvas.addEventListener('mousemove', (e) => {
-        if (!isEditing || !editBoxStart) return;
-        const currentX = e.clientX + camera.x;
-        const currentY = e.clientY + camera.y;
-        
-        // Draw temporary box
-        render(); // redraw frame
-        ctx.fillStyle = 'rgba(0, 0, 255, 0.5)';
-        const x = Math.min(editBoxStart.x, currentX);
-        const y = Math.min(editBoxStart.y, currentY);
-        const w = Math.abs(currentX - editBoxStart.x);
-        const h = Math.abs(currentY - editBoxStart.y);
-        ctx.fillRect(x - camera.x, y - camera.y, w, h);
-    });
-
-    canvas.addEventListener('mouseup', (e) => {
-        if (!isEditing || !editBoxStart) return;
-        isEditing = false;
-        const currentX = e.clientX + camera.x;
-        const currentY = e.clientY + camera.y;
-        
-        const x = Math.min(editBoxStart.x, currentX);
-        const y = Math.min(editBoxStart.y, currentY);
-        const w = Math.abs(currentX - editBoxStart.x);
-        const h = Math.abs(currentY - editBoxStart.y);
-        
-        if (w > 5 && h > 5) {
-            collisions.push({ x: Math.floor(x), y: Math.floor(y), w: Math.floor(w), h: Math.floor(h) });
-            updateEditorOutput();
-        }
-        editBoxStart = null;
-    });
-
-    window.addEventListener('keydown', (e) => {
-        if (e.key === 'z') {
-            collisions.pop();
-            updateEditorOutput();
-        }
-    });
-
-    function updateEditorOutput() {
-        let str = "const collisions = [\\n";
-        collisions.forEach(b => {
-            str += `    { x: ${b.x}, y: ${b.y}, w: ${b.w}, h: ${b.h} },\\n`;
-        });
-        str += "];";
-        const ta = document.getElementById('editorOutput');
-        ta.value = str;
-        ta.scrollTop = ta.scrollHeight;
-    }
-}
-
-window.addEventListener('contextmenu', (e) => {
-    if (window.location.search.includes('edit')) {
-        e.preventDefault();
-    }
-});
-
+
