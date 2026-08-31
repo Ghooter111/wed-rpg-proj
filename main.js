@@ -18,6 +18,33 @@ let activeModalId = null;
 // Quests and Dialogue
 let questItems = [];
 let collectedQuests = 0;
+let validSpawnPoints = []; // Predefined safe spawn points
+let debugSpawnPoints = [];
+let isSpawnEditorActive = false;
+
+const btnToggleSpawnEditor = document.getElementById('btnToggleSpawnEditor');
+const btnCopySpawns = document.getElementById('btnCopySpawns');
+
+if (btnToggleSpawnEditor) {
+    if (window.location.search.includes('debug')) {
+        btnToggleSpawnEditor.style.display = 'block';
+    } else {
+        btnToggleSpawnEditor.style.display = 'none';
+    }
+    
+    btnToggleSpawnEditor.addEventListener('click', () => {
+        isSpawnEditorActive = !isSpawnEditorActive;
+        btnToggleSpawnEditor.innerText = `Spawn Editor: ${isSpawnEditorActive ? 'ON' : 'OFF'}`;
+        btnCopySpawns.style.display = isSpawnEditorActive ? 'block' : 'none';
+        btnToggleSpawnEditor.style.background = isSpawnEditorActive ? 'rgba(255,0,0,0.7)' : 'rgba(0,0,0,0.7)';
+    });
+
+    btnCopySpawns.addEventListener('click', () => {
+        const json = JSON.stringify(debugSpawnPoints);
+        navigator.clipboard.writeText(`let validSpawnPoints = ${json};`);
+        alert("Spawn points copied to clipboard!");
+    });
+}
 
 let isDialogueActive = false;
 let currentDialogue = null;
@@ -157,14 +184,31 @@ function playNextSong() {
 
 // Play music on first interaction
 function firstInteraction() {
-    if (!audioCtx) initAudio();
-    else if (audioCtx.state === 'suspended') audioCtx.resume();
-    
+    initAudio();
     window.removeEventListener('keydown', firstInteraction);
     window.removeEventListener('click', firstInteraction);
 }
+
 window.addEventListener('keydown', firstInteraction);
 window.addEventListener('click', firstInteraction);
+
+// Map Click Logic for Spawn Editor
+canvas.addEventListener('click', (e) => {
+    if (!isSpawnEditorActive) return;
+    const rect = canvas.getBoundingClientRect();
+    
+    // Calculate click coordinates relative to internal canvas resolution
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    
+    const clickX = (e.clientX - rect.left) * scaleX;
+    const clickY = (e.clientY - rect.top) * scaleY;
+    
+    const mapX = (clickX + camera.x) | 0;
+    const mapY = (clickY + camera.y) | 0;
+    
+    debugSpawnPoints.push({x: mapX, y: mapY});
+});
 
 // UI Controls
 const btnToggleMusic = document.getElementById('btnToggleMusic');
@@ -207,12 +251,24 @@ function assetLoaded() {
 
         // Generate random quest items
         if (questItems.length === 0) {
+            let availableSpawns = [...validSpawnPoints];
             for (let i = 0; i < 3; i++) {
-                questItems.push({
-                    x: 100 + Math.random() * (worldWidth - 200),
-                    y: 100 + Math.random() * (worldHeight - 200),
-                    collected: false
-                });
+                if (availableSpawns.length > 0) {
+                    const idx = Math.floor(Math.random() * availableSpawns.length);
+                    const spawn = availableSpawns.splice(idx, 1)[0];
+                    questItems.push({
+                        x: spawn.x,
+                        y: spawn.y,
+                        collected: false
+                    });
+                } else {
+                    // Fallback to random if no spawn points defined
+                    questItems.push({
+                        x: 100 + Math.random() * (worldWidth - 200),
+                        y: 100 + Math.random() * (worldHeight - 200),
+                        collected: false
+                    });
+                }
             }
         }
         player.x = worldWidth / 2 - player.width / 2;
@@ -1061,6 +1117,26 @@ function render() {
                 // Draw Rose Image
                 const size = 30;
                 ctx.drawImage(roseImg, drawX - size/2, drawY - size/2, size, size);
+            }
+        }
+
+        // Draw Debug Spawns if active
+        if (isSpawnEditorActive) {
+            for (let pt of debugSpawnPoints) {
+                const drawX = pt.x - camera.x;
+                const drawY = pt.y - camera.y;
+                ctx.fillStyle = 'blue';
+                ctx.beginPath();
+                ctx.arc(drawX, drawY, 5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            for (let pt of validSpawnPoints) {
+                const drawX = pt.x - camera.x;
+                const drawY = pt.y - camera.y;
+                ctx.fillStyle = 'green';
+                ctx.beginPath();
+                ctx.arc(drawX, drawY, 5, 0, Math.PI * 2);
+                ctx.fill();
             }
         }
     } else {
