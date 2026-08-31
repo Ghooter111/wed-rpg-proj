@@ -921,7 +921,7 @@ if (window.location.search.includes('edit=npc')) {
         if (draggingSignId) {
             console.log(JSON.stringify(signSettings, null, 2));
             const editorOutput = document.getElementById('editorOutput');
-            if(editorOutput) editorOutput.value = "const signSettings = \\n" + JSON.stringify(signSettings, null, 2) + ";";
+            if(editorOutput) editorOutput.value = "const signSettings = \
             draggingSignId = null;
         }
     });
@@ -942,7 +942,7 @@ if (window.location.search.includes('edit=npc')) {
                 conf.w += e.deltaY > 0 ? -2 : 2;
                 if (conf.w < 10) conf.w = 10;
                 const editorOutput = document.getElementById('editorOutput');
-                if(editorOutput) editorOutput.value = "const signSettings = \\n" + JSON.stringify(signSettings, null, 2) + ";";
+                if(editorOutput) editorOutput.value = "const signSettings = \
             }
         });
     });
@@ -1273,9 +1273,9 @@ if (window.location.search.includes('edit=collision')) {
     });
 
     function updateEditorOutput() {
-        let str = "const collisions = [\\n";
+        let str = "const collisions = [\
         collisions.forEach(b => {
-            str += `    { x: ${b.x}, y: ${b.y}, w: ${b.w}, h: ${b.h} },\\n`;
+            str += `    { x: ${b.x}, y: ${b.y}, w: ${b.w}, h: ${b.h} },\
         });
         str += "];";
         const ta = document.getElementById('editorOutput');
