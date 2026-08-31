@@ -57,7 +57,7 @@ resizeCanvas();
 const gameState = {
     isModalOpen: false,
     assetsLoaded: false,
-    assetsToLoad: 50,
+    assetsToLoad: 52, // bg (3) + char (4) + walk (4) + signs (1) + npcs (40)
     assetsLoadedCount: 0
 };
 
@@ -251,6 +251,8 @@ function spawnSplash() {
 }
 
 const bgImage = new Image(); bgImage.onload = assetLoaded; bgImage.src = './assets/background.jpg';
+const bgImageAfternoon = new Image(); bgImageAfternoon.onload = assetLoaded; bgImageAfternoon.src = './assets/map_afternoon.jpg';
+const bgImageNight = new Image(); bgImageNight.onload = assetLoaded; bgImageNight.src = './assets/map_night.jpg';
 
 const charUp = new Image(); charUp.onload = assetLoaded; charUp.src = './assets/char_left.png'; // ATAS (Gambar 3)
 const charDown = new Image(); charDown.onload = assetLoaded; charDown.src = './assets/char_down.png'; // BAWAH (Gambar 2)
@@ -995,8 +997,16 @@ function render() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
     if (gameState.assetsLoaded) {
+        const hours = new Date().getHours();
+        let currentBg = bgImage;
+        if (hours >= 18 || hours < 6) {
+            currentBg = bgImageNight;
+        } else if (hours >= 15 && hours < 18) {
+            currentBg = bgImageAfternoon;
+        }
+
         ctx.drawImage(
-            bgImage,
+            currentBg,
             camera.x, camera.y, canvas.width, canvas.height,
             0, 0, canvas.width, canvas.height
         );
@@ -1051,54 +1061,6 @@ function render() {
                 ctx.fill();
             }
         }
-
-        // Day/Night Cycle Overlay
-        const hours = new Date().getHours();
-        let darkness = 0;
-        if (hours >= 18 || hours < 6) {
-            // Night time
-            darkness = 0.55; // 55% opacity dark blue
-        } else if (hours === 17 || hours === 6) {
-            // Twilight/Dawn
-            darkness = 0.3;
-        }
-
-        if (darkness > 0) {
-            // Dark overlay
-            ctx.fillStyle = `rgba(10, 10, 40, ${darkness})`;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // Fairy Lights overlay for night time
-            // Draw a few random glowing dots that are static in the world
-            ctx.fillStyle = 'rgba(255, 230, 150, 0.8)';
-            const lightPositions = [
-                {x: 200, y: 150}, {x: 250, y: 140}, {x: 300, y: 160},
-                {x: 400, y: 350}, {x: 450, y: 330}, {x: 500, y: 360},
-                {x: 700, y: 250}, {x: 750, y: 220}, {x: 800, y: 270},
-                {x: 100, y: 600}, {x: 150, y: 620}, {x: 80, y: 650}
-            ];
-            
-            for (let light of lightPositions) {
-                const lx = (light.x - camera.x) | 0;
-                const ly = (light.y - camera.y) | 0;
-                if (lx > -10 && lx < canvas.width + 10 && ly > -10 && ly < canvas.height + 10) {
-                    const twinkle = (Math.sin(time * 5 + light.x) + 1) / 2; // 0 to 1
-                    
-                    // Core
-                    ctx.fillStyle = `rgba(255, 255, 255, ${0.5 + twinkle * 0.5})`;
-                    ctx.beginPath();
-                    ctx.arc(lx, ly, 2, 0, Math.PI * 2);
-                    ctx.fill();
-                    
-                    // Glow
-                    ctx.fillStyle = `rgba(255, 200, 50, ${0.2 + twinkle * 0.2})`;
-                    ctx.beginPath();
-                    ctx.arc(lx, ly, 8, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-            }
-        }
-
     } else {
         ctx.fillStyle = 'white';
         ctx.font = '20px Arial';
