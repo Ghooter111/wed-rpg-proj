@@ -530,7 +530,7 @@ function drawPlayer() {
     );
 
     // Debug Collisions
-    const forceDebug = true; // Selalu aktifkan box merah untuk sementara
+    const forceDebug = false; // Selalu aktifkan box merah untuk sementara
     if (forceDebug || window.location.search.includes('debug') || window.location.search.includes('edit')) {
         ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
         for (const box of collisions) {
@@ -689,7 +689,7 @@ setTimeout(() => {
 // --- COLLISION EDITOR ---
 let isEditing = false;
 let editBoxStart = null;
-const forceEdit = true; // Selalu aktifkan editor untuk sementara
+const forceEdit = false; // Selalu aktifkan editor untuk sementara
 
 if (forceEdit || window.location.search.includes('edit')) {
     document.getElementById('editorOutput').style.display = 'block';
