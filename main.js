@@ -941,10 +941,6 @@ function drawFloatingSigns() {
                 sx = signW; sy = signH;
             }
             
-            if (draggingSignId === zone.id) {
-                ctx.globalAlpha = 0.5;
-            }
-            
             ctx.drawImage(
                 signsImg,
                 sx, sy, signW, signH,
