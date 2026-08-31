@@ -247,7 +247,7 @@ function spawnSplash() {
 }
 
 const bgImage = new Image(); bgImage.onload = assetLoaded; bgImage.src = './assets/background.jpg';
-const bgImageAfternoon = new Image(); bgImageAfternoon.onload = assetLoaded; bgImageAfternoon.src = './assets/map_afternoon.jpg';
+const bgImageAfternoon = new Image(); bgImageAfternoon.onload = assetLoaded; bgImageAfternoon.src = './assets/map_evening.jpg';
 const bgImageNight = new Image(); bgImageNight.onload = assetLoaded; bgImageNight.src = './assets/map_night.jpg';
 
 const charUp = new Image(); charUp.onload = assetLoaded; charUp.src = './assets/char_left.png'; // ATAS (Gambar 3)
