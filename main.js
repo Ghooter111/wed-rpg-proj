@@ -18,7 +18,7 @@ let activeModalId = null;
 // Quests and Dialogue
 let questItems = [];
 let collectedQuests = 0;
-let validSpawnPoints = []; // Predefined safe spawn points
+let validSpawnPoints = [{"x":171,"y":784},{"x":437,"y":843},{"x":118,"y":450},{"x":539,"y":618},{"x":285,"y":457},{"x":447,"y":279},{"x":122,"y":257},{"x":281,"y":221},{"x":453,"y":360},{"x":231,"y":517},{"x":488,"y":492}];
 let debugSpawnPoints = [];
 let isSpawnEditorActive = false;
 
