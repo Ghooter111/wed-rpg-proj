@@ -401,19 +401,6 @@ const collisions = [
     { x: 378, y: 85, w: 12, h: 41 },
     { x: 182, y: 80, w: 12, h: 39 },
     { x: 267, y: 131, w: 38, h: 44 },
-    
-    // Fix for floating on trees and stalls (making the leafy/top parts solid)
-    { x: 190, y: 640, w: 180, h: 140 }, // Center Big Tree
-    { x: 0, y: 740, w: 130, h: 160 },   // Left Tree Group (Lower)
-    { x: 440, y: 740, w: 130, h: 160 }, // Right Tree Group (Lower)
-    
-    // The 4 interactive stalls
-    { x: 140, y: 620, w: 90, h: 100 }, // Orange stall
-    { x: 340, y: 620, w: 90, h: 100 }, // Purple stall
-    { x: 40, y: 700, w: 90, h: 100 }, // Green stall
-    { x: 440, y: 700, w: 90, h: 100 }, // Blue stall
-    
-    { x: 160, y: 40, w: 250, h: 110 }   // Altar Top
 ];
 
 function checkCollision(newX, newY, width, height) {
@@ -429,11 +416,12 @@ function checkCollision(newX, newY, width, height) {
 }
 
 function isNearInteractionZone() {
+    const pad = 15; // 15px padding for interaction
     for (let zone of interactionZones) {
-        if (player.x < zone.x + zone.w &&
-            player.x + player.width > zone.x &&
-            player.y < zone.y + zone.h &&
-            player.y + player.height > zone.y) {
+        if (player.x < zone.x + zone.w + pad &&
+            player.x + player.width > zone.x - pad &&
+            player.y < zone.y + zone.h + pad &&
+            player.y + player.height > zone.y - pad) {
             return zone;
         }
     }
@@ -542,7 +530,8 @@ function drawPlayer() {
     );
 
     // Debug Collisions
-    if (window.location.search.includes('debug') || window.location.search.includes('edit')) {
+    const forceDebug = true; // Selalu aktifkan box merah untuk sementara
+    if (forceDebug || window.location.search.includes('debug') || window.location.search.includes('edit')) {
         ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
         for (const box of collisions) {
             ctx.fillRect(box.x - camera.x, box.y - camera.y, box.w, box.h);
@@ -700,8 +689,9 @@ setTimeout(() => {
 // --- COLLISION EDITOR ---
 let isEditing = false;
 let editBoxStart = null;
+const forceEdit = true; // Selalu aktifkan editor untuk sementara
 
-if (window.location.search.includes('edit')) {
+if (forceEdit || window.location.search.includes('edit')) {
     document.getElementById('editorOutput').style.display = 'block';
     
     canvas.addEventListener('mousedown', (e) => {
